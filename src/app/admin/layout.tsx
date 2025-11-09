@@ -4,7 +4,6 @@ import * as React from 'react';
 import {
   Sidebar,
   SidebarProvider,
-  SidebarTrigger,
   SidebarInset,
   SidebarHeader,
   SidebarContent,
@@ -17,11 +16,9 @@ import { Home, Hotel, PlusCircle, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase';
 
 function AdminSidebar() {
   const pathname = usePathname();
-  const { user, loading } = useUser();
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: Home },
@@ -29,21 +26,6 @@ function AdminSidebar() {
     { href: '/admin/properties/add', label: 'Add Property', icon: PlusCircle },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
-
-  if (loading) {
-    return null; // Or a loading skeleton
-  }
-
-  if (!user) {
-    return (
-        <div className="p-4">
-            <p className="text-sm text-muted-foreground mb-4">You need to be logged in to access the admin panel.</p>
-            <Button asChild className="w-full">
-                <Link href="/login?redirect=/admin">Login</Link>
-            </Button>
-        </div>
-    );
-  }
 
   return (
     <Sidebar>
