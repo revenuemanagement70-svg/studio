@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Star, Map, Tags, Phone, LogOut } from 'lucide-react';
+import { Menu, X, Home, Star, Map, Tags, Phone, LogOut, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -65,6 +65,14 @@ export function Header() {
                 </Link>
               </li>
             ))}
+             {user && (
+              <li>
+                <Link href="/favorites" className="flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors">
+                  <Heart className="size-4" />
+                  My Favorites
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 
@@ -116,6 +124,14 @@ export function Header() {
                                 </Link>
                             </li>
                         ))}
+                        {user && (
+                            <li>
+                                <Link href="/favorites" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
+                                    <Heart className="size-5" />
+                                    My Favorites
+                                </Link>
+                            </li>
+                        )}
                         </ul>
                     </nav>
                     <div className="mt-auto border-t pt-6 flex flex-col gap-4">
