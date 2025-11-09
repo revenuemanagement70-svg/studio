@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble } from 'lucide-react';
+import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -21,6 +21,7 @@ function AdminSidebar() {
     { href: '/admin', label: 'Dashboard', icon: <Home /> },
     { href: '/admin/properties', label: 'Properties', icon: <Hotel /> },
     { href: '/admin/bookings', label: 'Bookings', icon: <BedDouble /> },
+    { href: '/admin/availability', label: 'Availability', icon: <CalendarCheck /> },
     { href: '/admin/settings', label: 'Settings', icon: <Settings /> },
   ];
 

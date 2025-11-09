@@ -1,6 +1,6 @@
 'use client';
 
-import { collection, addDoc, deleteDoc, doc, Firestore, writeBatch, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, Firestore, writeBatch, getDocs, updateDoc, query } from 'firebase/firestore';
 import type { hotel as Hotel } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';

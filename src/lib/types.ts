@@ -30,3 +30,10 @@ export type booking = {
     totalPrice: number;
     bookedAt: any;
 };
+
+export type RoomAvailability = {
+    id: string;
+    date: string; // YYYY-MM-DD
+    price: number;
+    roomsAvailable: number;
+};

@@ -173,6 +173,27 @@
         "totalPrice",
         "bookedAt"
       ]
+    },
+    "roomAvailability": {
+        "title": "Room Availability",
+        "description": "Defines the pricing and number of available rooms for a specific date.",
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "string",
+                "format": "date",
+                "description": "The specific date for this availability entry (YYYY-MM-DD)."
+            },
+            "price": {
+                "type": "number",
+                "description": "The price for a room on this specific date."
+            },
+            "roomsAvailable": {
+                "type": "number",
+                "description": "The number of rooms available for booking on this date."
+            }
+        },
+        "required": ["date", "price", "roomsAvailable"]
     }
   },
   "auth": {
@@ -184,6 +205,12 @@
         "$ref": "#/entities/hotel"
       },
       "description": "A list of all hotel properties."
+    },
+    "/hotels/{hotelId}/availability/{availabilityId}": {
+        "schema": {
+            "$ref": "#/entities/roomAvailability"
+        },
+        "description": "Availability and pricing information for a specific hotel on a specific date."
     },
     "/users/{userId}/favorites/{favoriteId}": {
       "schema": {
