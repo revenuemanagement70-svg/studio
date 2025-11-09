@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { findHotels } from '../tools/hotel-finder';
 
 const PersonalizedHotelRecommendationsInputSchema = z.object({
   destination: z.string().describe('The destination city for the hotel search.'),
@@ -45,13 +46,18 @@ const prompt = ai.definePrompt({
   name: 'personalizedHotelRecommendationsPrompt',
   input: {schema: PersonalizedHotelRecommendationsInputSchema},
   output: {schema: PersonalizedHotelRecommendationsOutputSchema},
+  tools: [findHotels],
   prompt: `You are a hotel recommendation expert. A user is planning a trip to {{destination}} from {{checkInDate}} to {{checkOutDate}} with {{numberOfGuests}} guests.
 
   {{#if budget}}The user's budget is {{budget}}.{{/if}}
   {{#if amenities}}The user is looking for hotels with the following amenities: {{amenities}}.{{/if}}
   {{#if travelStyle}}The user's travel style is {{travelStyle}}.{{/if}}
 
-  Based on this information, recommend a few hotels in {{destination}} that would be a good fit for the user. Provide the hotel name, address, price per night, rating, list of amenities, and a short description.  Include at least 3 recommendations.`,
+  Based on this information, recommend a few hotels in {{destination}} that would be a good fit for the user. Provide the hotel name, address, price per night, rating, list of amenities, and a short description.  Include at least 3 recommendations.
+
+  To do this, you MUST first use the findHotels tool to search for hotels in the user's desired destination. Then, use the user's other preferences (like budget and travel style) to select, rank, and present the best options from the search results.
+  
+  Do not make up hotels. Only recommend hotels that are returned by the findHotels tool.`,
 });
 
 const personalizedHotelRecommendationsFlow = ai.defineFlow(
