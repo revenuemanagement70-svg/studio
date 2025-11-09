@@ -22,33 +22,6 @@ const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
 ];
 
-function ImagePreviews({ urls }: { urls: string[] }) {
-    if (urls.length === 0) {
-        return (
-            <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
-                <ImageIcon className="mx-auto size-8 mb-2" />
-                <p>Image previews will appear here.</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {urls.map((url, index) => (
-                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-                    <Image
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                </div>
-            ))}
-        </div>
-    );
-}
-
 function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -62,7 +35,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [imageUrls, setImageUrls] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [managerName, setManagerName] = useState("");
@@ -70,11 +42,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [contactPhone, setContactPhone] = useState("");
   const [taxRate, setTaxRate] = useState("");
   const [commissionRate, setCommissionRate] = useState("");
-
-
-  const parsedUrls = useMemo(() => {
-    return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
-  }, [imageUrls]);
 
   useEffect(() => {
     if (!firestore || !hotelId) return;
@@ -93,7 +60,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setPrice(String(hotelData.price));
           setRating(String(hotelData.rating));
           setSelectedAmenities(hotelData.amenities || []);
-          setImageUrls((hotelData.imageUrls || []).join('\n'));
           setLatitude(String(hotelData.latitude || ""));
           setLongitude(String(hotelData.longitude || ""));
           setManagerName(hotelData.managerName || "");
@@ -149,7 +115,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       price: Number(price),
       rating: Number(rating),
       amenities: selectedAmenities,
-      imageUrls: parsedUrls,
+      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`], // Assign a placeholder
       latitude: Number(latitude),
       longitude: Number(longitude),
       managerName,
@@ -158,15 +124,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       taxRate: Number(taxRate) || 0,
       commissionRate: Number(commissionRate) || 0,
     };
-    
-    if (hotelData.imageUrls?.length === 0) {
-        toast({
-            variant: "destructive",
-            title: "Validation Error",
-            description: "Please provide at least one valid image URL.",
-        });
-        return;
-    }
 
     startTransition(async () => {
       try {
@@ -289,21 +246,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
             <p className="text-xs text-muted-foreground pt-1">You can get these from Google Maps by right-clicking on a location.</p>
           </CardContent>
         </Card>
-
-        <Card>
-            <CardContent className="pt-6 space-y-6">
-                <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><ImageIcon className="size-5"/> Property Images</h3>
-                <div className="space-y-2">
-                    <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
-                    <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4} />
-                </div>
-                <div className="space-y-2">
-                    <Label>Image Previews</Label>
-                    <ImagePreviews urls={parsedUrls} />
-                </div>
-            </CardContent>
-        </Card>
-
+        
         <div className="flex justify-end gap-4">
             <Button variant="outline" asChild type="button">
                 <Link href="/admin/properties">Cancel</Link>
@@ -396,22 +339,6 @@ function EditPropertyFormSkeleton() {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardContent className="pt-6 space-y-6">
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-24 w-full" />
-                    </div>
-                     <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {[...Array(5)].map((_, i) => (
-                                <Skeleton key={i} className="aspect-square rounded-lg" />
-                            ))}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
             <div className="flex justify-end gap-4">
                 <Skeleton className="h-10 w-24" />
                 <Skeleton className="h-10 w-32" />
