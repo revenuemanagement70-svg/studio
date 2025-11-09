@@ -1,10 +1,15 @@
 import Image from 'next/image';
-import { Star, Wifi, ParkingCircle, UtensilsCrossed } from 'lucide-react';
+import { Star, Wifi, ParkingCircle, UtensilsCrossed, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
 import React from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { useFavorites } from '@/firebase/firestore/use-favorites';
+import { saveFavorite, removeFavorite } from '@/firebase/firestore/favorites';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
 
@@ -32,9 +37,49 @@ function getAmenityIcon(amenity: string): React.ReactNode {
 
 export function HotelCard({ hotel }: HotelCardProps) {
   const imageUrl = `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/400/300`;
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const { favorites, loading: favoritesLoading } = useFavorites(user?.uid);
+  
+  const isFavorite = favorites?.some(fav => fav.name === hotel.name);
+
+  const handleFavoriteToggle = async () => {
+    if (!user || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: "You must be logged in to save favorites.",
+      });
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await removeFavorite(firestore, user.uid, hotel.name.replace(/\s+/g, '-').toLowerCase());
+        toast({
+          title: "Removed from Favorites",
+          description: `${hotel.name} has been removed from your favorites.`,
+        });
+      } else {
+        await saveFavorite(firestore, user.uid, hotel);
+        toast({
+          title: "Added to Favorites",
+          description: `${hotel.name} has been added to your favorites.`,
+        });
+      }
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error instanceof Error ? error.message : "Could not update favorites.",
+      });
+    }
+  };
+
 
   return (
-    <Card className="p-4 flex flex-col md:flex-row gap-6 hover:shadow-xl transition-shadow duration-300">
+    <Card className="p-4 flex flex-col md:flex-row gap-6 hover:shadow-xl transition-shadow duration-300 relative">
       <Image
         src={imageUrl}
         alt={`Image of ${hotel.name}`}
@@ -73,6 +118,18 @@ export function HotelCard({ hotel }: HotelCardProps) {
           <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent font-bold">Book Now</Button>
         </div>
       </div>
+      {!userLoading && user && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="absolute top-2 right-2 text-red-500 hover:text-red-600 hover:bg-red-100"
+          onClick={handleFavoriteToggle}
+          disabled={favoritesLoading}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Save to favorites'}
+        >
+          <Heart className={cn("size-6", isFavorite && "fill-current")} />
+        </Button>
+      )}
     </Card>
   );
 }
