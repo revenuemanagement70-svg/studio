@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -14,16 +14,20 @@ function ResultsPage() {
   const checkin = searchParams.get('checkin') || '';
   const checkout = searchParams.get('checkout') || '';
   const guests = searchParams.get('guests') || '1';
+  const budget = searchParams.get('budget') || '';
+  const travelStyle = searchParams.get('travelStyle') || '';
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
       <Header />
       <main className="flex-grow pt-24 pb-12">
-        <ResultsContent 
-            destination={destination} 
-            checkin={checkin} 
-            checkout={checkout} 
-            guests={guests} 
+        <ResultsContent
+          destination={destination}
+          checkin={checkin}
+          checkout={checkout}
+          guests={guests}
+          budget={budget}
+          travelStyle={travelStyle}
         />
       </main>
       <Footer />

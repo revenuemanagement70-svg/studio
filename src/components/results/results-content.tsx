@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -14,16 +14,17 @@ interface ResultsContentProps {
   checkin: string;
   checkout: string;
   guests: string;
+  budget: string;
+  travelStyle: string;
 }
 
-export function ResultsContent({ destination, checkin, checkout, guests }: ResultsContentProps) {
+export function ResultsContent({ destination, checkin, checkout, guests, budget, travelStyle }: ResultsContentProps) {
   const [recommendations, setRecommendations] = useState<PersonalizedHotelRecommendationsOutput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchRecommendations = async () => {
-      // Don't fetch if destination is missing
       if (!destination) {
         setError('Please provide a destination to search.');
         setLoading(false);
@@ -37,6 +38,8 @@ export function ResultsContent({ destination, checkin, checkout, guests }: Resul
           checkInDate: checkin,
           checkOutDate: checkout,
           numberOfGuests: parseInt(guests, 10) || 1,
+          budget: budget,
+          travelStyle: travelStyle,
         });
         setRecommendations(result);
       } catch (e) {
@@ -49,7 +52,16 @@ export function ResultsContent({ destination, checkin, checkout, guests }: Resul
     };
     
     fetchRecommendations();
-  }, [destination, checkin, checkout, guests]);
+  }, [destination, checkin, checkout, guests, budget, travelStyle]);
+
+  const getSubheading = () => {
+    const parts = [];
+    if (checkin && checkout) parts.push(`${checkin} to ${checkout}`);
+    if (guests) parts.push(`${guests} Guest(s)`);
+    if (budget) parts.push(`Budget: ${budget}`);
+    if (travelStyle) parts.push(`Style: ${travelStyle}`);
+    return parts.length > 0 ? parts.join(' • ') : 'Any dates • Any guests';
+  };
 
   return (
     <div className="container mx-auto px-5">
@@ -62,8 +74,8 @@ export function ResultsContent({ destination, checkin, checkout, guests }: Resul
       
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-headline">Results for "{destination || '...'}"</h1>
-        <p className="text-muted-foreground">
-          {checkin && checkout ? `${checkin} to ${checkout}` : 'Any dates'} • {guests} Guest(s)
+        <p className="text-muted-foreground capitalize">
+          {getSubheading()}
         </p>
       </div>
 

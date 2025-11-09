@@ -1,5 +1,6 @@
 import { Flame, CheckCircle } from 'lucide-react';
 import { SearchSection } from './search-section';
+import { SmartSuggestions } from './smart-suggestions';
 
 export function Hero() {
   return (
@@ -20,6 +21,7 @@ export function Hero() {
         </div>
 
         <SearchSection />
+        <SmartSuggestions />
       </div>
     </section>
   );

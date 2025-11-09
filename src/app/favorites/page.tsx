@@ -20,6 +20,10 @@ function FavoritesContent() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-5 py-12">
+        <div className="mb-8">
+          <div className="h-8 w-48 bg-gray-300 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-64 bg-gray-300 rounded animate-pulse"></div>
+        </div>
         <div className="grid grid-cols-1 gap-4">
           {[...Array(3)].map((_, i) => (
             <HotelCardSkeleton key={i} />
