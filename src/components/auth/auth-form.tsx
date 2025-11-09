@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInAnonymously,
 } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const title = mode === 'login' ? 'Welcome Back!' : 'Create an Account';
   const description = mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.';
-  const buttonText = mode === 'login' ? 'Log In' : 'Sign Up';
+  const buttonText = mode === 'login' ? 'Log In (Anonymous)' : 'Sign Up';
   const alternativeText = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
   const alternativeLink = mode === 'login' ? '/signup' : '/login';
   const alternativeLinkText = mode === 'login' ? 'Sign Up' : 'Log In';
@@ -50,7 +51,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (mode === 'signup') {
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        // Bypass email/password for login and use anonymous sign-in
+        await signInAnonymously(auth);
       }
       router.push('/');
     } catch (err: any) {
@@ -69,29 +71,38 @@ export function AuthForm({ mode }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
+            {mode === 'signup' ? (
+                <>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                        id="email"
+                        type="email"
+                        placeholder="m@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={loading}
+                        />
+                    </div>
+                </>
+            ) : (
+                <p className="text-sm text-center text-muted-foreground p-4 bg-secondary rounded-md">
+                    Click the button below to sign in as an anonymous user for development.
+                </p>
+            )}
+
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="animate-spin" />}
