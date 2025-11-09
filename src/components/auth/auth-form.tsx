@@ -31,7 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const title = mode === 'login' ? 'Welcome Back!' : 'Create an Account';
   const description = mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.';
-  const buttonText = mode === 'login' ? 'Log In (Anonymous)' : 'Sign Up';
+  const buttonText = mode === 'login' ? 'Log In as Anonymous User' : 'Sign Up';
   const alternativeText = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
   const alternativeLink = mode === 'login' ? '/signup' : '/login';
   const alternativeLinkText = mode === 'login' ? 'Sign Up' : 'Log In';
@@ -49,9 +49,13 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === 'signup') {
+        if (!email || !password) {
+            setError('Email and password are required for sign up.');
+            setLoading(false);
+            return;
+        }
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        // Bypass email/password for login and use anonymous sign-in
         await signInAnonymously(auth);
       }
       router.push('/');
@@ -98,9 +102,11 @@ export function AuthForm({ mode }: AuthFormProps) {
                     </div>
                 </>
             ) : (
-                <p className="text-sm text-center text-muted-foreground p-4 bg-secondary rounded-md">
-                    Click the button below to sign in as an anonymous user for development.
-                </p>
+                <div className="p-4 text-center bg-secondary rounded-md">
+                    <p className="text-sm text-muted-foreground">
+                        For development, click below to sign in as an anonymous user.
+                    </p>
+                </div>
             )}
 
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
