@@ -38,6 +38,24 @@ function HotelDetailsContent() {
   const searchParams = useSearchParams();
   const hotelDataString = searchParams.get('data');
 
+  const destination = searchParams.get('destination') || '';
+  const checkin = searchParams.get('checkin') || '';
+  const checkout = searchParams.get('checkout') || '';
+  const guests = searchParams.get('guests') || '';
+  const budget = searchParams.get('budget') || '';
+  const travelStyle = searchParams.get('travelStyle') || '';
+
+  const resultsQuery = new URLSearchParams({
+    destination,
+    checkin,
+    checkout,
+    guests,
+    budget,
+    travelStyle
+  }).toString();
+
+  const backLink = `/results?${resultsQuery}`;
+
   if (!hotelDataString) {
     return (
       <div className="container mx-auto px-5 text-center">
@@ -57,7 +75,7 @@ function HotelDetailsContent() {
   return (
     <div className="container mx-auto px-5">
       <Button asChild variant="link" className="p-0 h-auto inline-flex items-center gap-2 text-primary font-bold mb-6 hover:underline">
-        <Link href="/results">
+        <Link href={backLink}>
           <ArrowLeft className="size-4" />
           Back to Results
         </Link>
@@ -107,7 +125,9 @@ function HotelDetailsContent() {
                             <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
                             <span className="text-md text-muted-foreground"> / night</span>
                         </div>
-                        <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12">Book Now</Button>
+                        <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12" asChild>
+                          <a href="https://example.com/booking" target="_blank" rel="noopener noreferrer">Book Now</a>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
