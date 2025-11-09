@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "delhi",
+      "description": "India Gate in Delhi at sunset",
+      "imageUrl": "https://images.unsplash.com/photo-1585828068970-7b75082485cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkZWxoaSUyMGluZGlhLWdhdGV8ZW58MHx8fHwxNzYyNzE4MzkwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "delhi india-gate"
+    },
+    {
+      "id": "mumbai",
+      "description": "Gateway of India in Mumbai",
+      "imageUrl": "https://images.unsplash.com/photo-1664637517904-a53ba8966c11?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtdW1iYWklMjBnYXRld2F5LW9mLWluZGlhfGVufDB8fHx8MTc2MjcxODM5MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mumbai gateway-of-india"
+    },
+    {
+      "id": "goa",
+      "description": "Beach in Goa",
+      "imageUrl": "https://images.unsplash.com/photo-1682743710558-b338ba285925?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxnb2ElMjBiZWFjaHxlbnwwfHx8fDE3NjI3MTgzOTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "goa beach"
+    },
+    {
+      "id": "jaipur",
+      "description": "Hawa Mahal in Jaipur",
+      "imageUrl": "https://images.unsplash.com/photo-1701087366618-112f1b333a9f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8amFpcHVyJTIwaGF3YS1tYWhhbHxlbnwwfHx8fDE3NjI3MTgzOTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jaipur hawa-mahal"
+    }
+  ]
 }
