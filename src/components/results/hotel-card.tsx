@@ -24,7 +24,7 @@ interface HotelCardProps {
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'wifi': <Wifi className="size-4" />,
   'pool': <svg className="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11.64 5.64a1 1 0 0 1 .02 1.6l-3.32 4.04a1 1 0 0 1-1.62-.02l-3.36-4.9a1 1 0 0 1 1.6-1.06l2.03 2.98L9 5.62a1 1 0 0 1 1.06-1.62z"/><path d="M18.14 5.64a1 1 0 0 1 .02 1.6l-3.32 4.04a1 1 0 0 1-1.62-.02l-3.36-4.9a1 1 0 0 1 1.6-1.06l2.04 2.98 1.1-1.6a1 1 0 0 1 1.62-1.06z"/><path d="M7.34 15.64a1 1 0 0 1 .02 1.6l-1.63 1.98a1 1 0 0 1-1.62-.02l-1.12-1.62a1 1 0 1 1 1.6-1.06l.34.48.37-.46a1 1 0 0 1 1.04-1.6z"/><path d="m14.84 15.64a1 1 0 0 1 .02 1.6l-1.63 1.98a1 1 0 0 1-1.62-.02l-1.12-1.62a1 1 0 1 1 1.6-1.06l.34.48.37-.46a1 1 0 0 1 1.04-1.6z"/></svg>,
-  'gym': <svg className="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 5 14 14"/><path d="m14 5-9 9"/><path d="M9.5 2.5 12 5l-2.5 2.5"/><path d="m14.5 19.5-2.5-2.5 2.5-2.5"/></svg>,
+  'gym': <svg className="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5 14 14"></path><path d="M14 5 5 14"></path><path d="M12 22v-5l-3-3-2.07 2.07a1 1 0 0 0 0 1.41l2.07 2.07"></path><path d="M16 12V6a2 2 0 0 0-2-2H8"></path><path d="M12 2v2"></path><path d="m6.5 6.5-1-1"></path><path d="m17.5 6.5 1-1"></path></svg>,
   'parking': <ParkingCircle className="size-4" />,
   'restaurant': <UtensilsCrossed className="size-4" />,
 };
