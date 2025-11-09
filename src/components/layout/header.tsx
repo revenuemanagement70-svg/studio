@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Menu, X, Home, Star, Map, Tags, Phone, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { getAuth, signOut } from 'firebase/auth';
@@ -94,7 +94,8 @@ export function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-full bg-background p-0">
-                <div className="flex flex-col h-full p-6">
+                <SheetHeader className="p-6">
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
                     <div className="flex justify-between items-center border-b pb-4">
                         <Link href="/" className="text-2xl font-black gradient-text font-headline" onClick={() => setMobileMenuOpen(false)}>
                             Staylo
@@ -103,6 +104,8 @@ export function Header() {
                             <X className="size-6" />
                         </Button>
                     </div>
+                </SheetHeader>
+                <div className="flex flex-col h-full p-6 pt-0">
                     <nav className="mt-8 flex-grow">
                         <ul className="flex flex-col gap-6">
                         {navLinks.map((link) => (
