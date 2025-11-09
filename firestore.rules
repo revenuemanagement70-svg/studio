@@ -1,0 +1,60 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isHotelDataValid() {
+        let data = request.resource.data;
+        return data.name is string &&
+               data.address is string &&
+               data.price is number &&
+               data.rating is number &&
+               data.description is string &&
+               data.imageUrls is list &&
+               data.latitude is number &&
+               data.longitude is number;
+    }
+
+    // HOTELS
+    // Allow anyone to read hotel listings and their availability.
+    // Only signed-in users (admins) can create, update, or delete hotels.
+    match /hotels/{hotelId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isHotelDataValid();
+
+      match /availability/{availabilityId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+    }
+
+    // USER DATA
+    // Users can only access their own data (favorites).
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /favorites/{favoriteId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // BOOKINGS
+    // Only the user who created the booking can read it.
+    // Creation is handled by the booking transaction logic.
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn(); // Further validation is in the transaction
+      allow update, delete: if false; // Bookings should not be updatable or deletable by users
+    }
+  }
+}
