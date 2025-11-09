@@ -1,16 +1,20 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail } from 'lucide-react';
 import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import React from 'react';
 
 type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
@@ -31,6 +35,57 @@ function getAmenityIcon(amenity: string): React.ReactNode {
         }
     }
     return null;
+}
+
+function BookingDialog({ hotelName }: { hotelName: string }) {
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setOpen(false);
+        toast({
+            title: "Booking Request Sent!",
+            description: `Your request to book ${hotelName} has been received.`,
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12">
+                    Book Now
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Book: {hotelName}</DialogTitle>
+                    <DialogDescription>
+                        Fill in your details below to send a booking request. This is a demo and will not create a real booking.
+                    </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                                <User className="inline-block mr-1 size-4" /> Name
+                            </Label>
+                            <Input id="name" defaultValue="John Doe" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="email" className="text-right">
+                               <Mail className="inline-block mr-1 size-4" /> Email
+                            </Label>
+                            <Input id="email" type="email" defaultValue="john@example.com" className="col-span-3" required />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button type="submit">Send Request</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 function HotelDetailsContent() {
@@ -107,9 +162,7 @@ function HotelDetailsContent() {
                             <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
                             <span className="text-md text-muted-foreground"> / night</span>
                         </div>
-                        <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12" asChild>
-                          <a href="https://example.com/booking" target="_blank" rel="noopener noreferrer">Book Now</a>
-                        </Button>
+                        <BookingDialog hotelName={hotel.name} />
                     </div>
                 </CardContent>
             </Card>
