@@ -25,6 +25,7 @@ export default function AddPropertyPage() {
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
   const [amenities, setAmenities] = useState("");
+  const [imageUrls, setImageUrls] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +45,17 @@ export default function AddPropertyPage() {
       price: Number(price),
       rating: Number(rating),
       amenities: amenities.split(',').map(a => a.trim()),
+      imageUrls: imageUrls.split('\n').map(url => url.trim()).filter(url => url),
     };
+
+    if (hotelData.imageUrls.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Please provide at least one image URL.",
+        });
+        return;
+    }
 
     startTransition(async () => {
       try {
@@ -85,6 +96,10 @@ export default function AddPropertyPage() {
                  <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
+                    <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">

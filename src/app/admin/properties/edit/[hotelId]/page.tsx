@@ -30,6 +30,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
   const [amenities, setAmenities] = useState("");
+  const [imageUrls, setImageUrls] = useState("");
 
   useEffect(() => {
     if (!firestore || !hotelId) return;
@@ -48,6 +49,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setPrice(String(hotelData.price));
           setRating(String(hotelData.rating));
           setAmenities(hotelData.amenities.join(', '));
+          setImageUrls(hotelData.imageUrls.join('\n'));
         } else {
           toast({
             variant: "destructive",
@@ -88,7 +90,17 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       price: Number(price),
       rating: Number(rating),
       amenities: amenities.split(',').map(a => a.trim()),
+      imageUrls: imageUrls.split('\n').map(url => url.trim()).filter(url => url),
     };
+    
+    if (hotelData.imageUrls?.length === 0) {
+        toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Please provide at least one image URL.",
+        });
+        return;
+    }
 
     startTransition(async () => {
       try {
@@ -127,6 +139,10 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                  <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
                     <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
+                    <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4}/>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
@@ -172,6 +188,10 @@ function EditPropertyFormSkeleton() {
                 <div className="space-y-2">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-20 w-full" />
+                </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-24 w-full" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {[...Array(3)].map((_, i) => (

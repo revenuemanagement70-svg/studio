@@ -7,4 +7,5 @@ export type hotel = {
     rating: number;
     amenities: string[];
     description: string;
+    imageUrls: string[];
 };

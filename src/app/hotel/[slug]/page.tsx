@@ -104,8 +104,8 @@ function HotelDetailsContent() {
   }
 
   const hotel: Hotel = JSON.parse(decodeURIComponent(hotelDataString));
-  const imageUrl = `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/1200/800`;
-
+  const mainImageUrl = hotel.imageUrls && hotel.imageUrls.length > 0 ? hotel.imageUrls[0] : `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/1200/800`;
+  const galleryImageUrls = hotel.imageUrls?.slice(1) || [];
 
   return (
     <div className="container mx-auto px-5">
@@ -117,15 +117,31 @@ function HotelDetailsContent() {
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
             <Image
-                src={imageUrl}
+                src={mainImageUrl}
                 alt={`Image of ${hotel.name}`}
                 data-ai-hint="hotel exterior large"
                 width={1200}
                 height={800}
                 className="rounded-xl object-cover w-full aspect-[3/2] shadow-lg"
             />
+            {galleryImageUrls.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {galleryImageUrls.map((url, index) => (
+                        <div key={index} className="aspect-w-1 aspect-h-1">
+                             <Image
+                                src={url}
+                                alt={`Gallery image ${index + 1} of ${hotel.name}`}
+                                data-ai-hint="hotel interior"
+                                width={300}
+                                height={200}
+                                className="rounded-lg object-cover w-full h-full shadow-md"
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
         <div className="lg:col-span-1">
             <Card>

@@ -61,9 +61,17 @@
         "description": {
           "type": "string",
           "description": "A short description of the hotel."
+        },
+        "imageUrls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "A list of URLs for the hotel's photos."
         }
       },
-      "required": ["id", "name", "address", "price", "rating", "description"]
+      "required": ["id", "name", "address", "price", "rating", "description", "imageUrls"]
     },
     "favoriteHotel": {
       "title": "Favorite Hotel Reference",
