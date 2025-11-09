@@ -19,6 +19,7 @@ type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
 
 interface HotelCardProps {
   hotel: Hotel;
+  source?: 'results' | 'favorites';
 }
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
@@ -39,7 +40,7 @@ function getAmenityIcon(amenity: string): React.ReactNode {
     return null;
 }
 
-export function HotelCard({ hotel }: HotelCardProps) {
+export function HotelCard({ hotel, source = 'results' }: HotelCardProps) {
   const imageUrl = `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/400/300`;
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
@@ -48,13 +49,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const [isFavoriteProcessing, setIsFavoriteProcessing] = useState(false);
   
   const searchParams = useSearchParams();
-  const destination = searchParams.get('destination') || '';
-  const checkin = searchParams.get('checkin') || '';
-  const checkout = searchParams.get('checkout') || '';
-  const guests = searchParams.get('guests') || '';
-  const budget = searchParams.get('budget') || '';
-  const travelStyle = searchParams.get('travelStyle') || '';
-
+  
   const isFavorite = favorites?.some(fav => fav.name === hotel.name);
 
   const handleFavoriteToggle = async () => {
@@ -95,16 +90,14 @@ export function HotelCard({ hotel }: HotelCardProps) {
   };
 
   const hotelSlug = hotel.name.replace(/\s+/g, '-').toLowerCase();
-
-  const detailsQuery = new URLSearchParams({
-    data: encodeURIComponent(JSON.stringify(hotel)),
-    destination,
-    checkin,
-    checkout,
-    guests,
-    budget,
-    travelStyle,
-  }).toString();
+  
+  const detailsQuery = new URLSearchParams();
+  detailsQuery.set('data', encodeURIComponent(JSON.stringify(hotel)));
+  if (source === 'results') {
+    detailsQuery.set('back', `/results?${searchParams.toString()}`);
+  } else if (source === 'favorites') {
+    detailsQuery.set('back', '/favorites');
+  }
 
 
   return (
@@ -145,7 +138,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
             <span className="text-sm text-muted-foreground"> / night</span>
           </div>
           <Button asChild size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent font-bold">
-            <Link href={`/hotel/${hotelSlug}?${detailsQuery}`}>View Details</Link>
+            <Link href={`/hotel/${hotelSlug}?${detailsQuery.toString()}`}>View Details</Link>
           </Button>
         </div>
       </div>

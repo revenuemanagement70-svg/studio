@@ -95,7 +95,7 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
         <div className="grid grid-cols-1 gap-4">
           {recommendations.hotelRecommendations.length > 0 ? (
              recommendations.hotelRecommendations.map((hotel, index) => (
-              <HotelCard key={hotel.name + index} hotel={hotel} />
+              <HotelCard key={hotel.name + index} hotel={hotel} source="results" />
             ))
           ) : (
             <div className="text-center py-16 bg-white rounded-lg shadow">

@@ -36,24 +36,7 @@ function getAmenityIcon(amenity: string): React.ReactNode {
 function HotelDetailsContent() {
   const searchParams = useSearchParams();
   const hotelDataString = searchParams.get('data');
-
-  const destination = searchParams.get('destination') || '';
-  const checkin = searchParams.get('checkin') || '';
-  const checkout = searchParams.get('checkout') || '';
-  const guests = searchParams.get('guests') || '';
-  const budget = searchParams.get('budget') || '';
-  const travelStyle = searchParams.get('travelStyle') || '';
-
-  const resultsQuery = new URLSearchParams({
-    destination,
-    checkin,
-    checkout,
-    guests,
-    budget,
-    travelStyle
-  }).toString();
-
-  const backLink = `/results?${resultsQuery}`;
+  const backLink = searchParams.get('back') || '/';
 
   if (!hotelDataString) {
     return (
@@ -76,7 +59,7 @@ function HotelDetailsContent() {
       <Button asChild variant="link" className="p-0 h-auto inline-flex items-center gap-2 text-primary font-bold mb-6 hover:underline">
         <Link href={backLink}>
           <ArrowLeft className="size-4" />
-          Back to Results
+          Back
         </Link>
       </Button>
 
