@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -16,6 +16,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel"
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'wifi': <Wifi className="size-4" />,
@@ -86,6 +94,100 @@ function BookingDialog({ hotelName }: { hotelName: string }) {
     );
 }
 
+function ImageGallery({ hotel }: { hotel: Hotel }) {
+  const [api, setApi] = useState<CarouselApi>()
+  const [mainApi, setMainApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+
+  const allImages = hotel.imageUrls && hotel.imageUrls.length > 0
+    ? hotel.imageUrls
+    : [`https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/1200/800`];
+
+
+  useEffect(() => {
+    if (!api || !mainApi) return;
+
+    const syncApis = (primary: CarouselApi, secondary: CarouselApi) => {
+        return () => {
+            if (primary.selectedScrollSnap() !== secondary.selectedScrollSnap()) {
+                secondary.scrollTo(primary.selectedScrollSnap())
+            }
+        }
+    }
+
+    const onSelect = () => {
+      setCurrent(mainApi.selectedScrollSnap())
+      api.scrollTo(mainApi.selectedScrollSnap())
+    }
+
+    mainApi.on("select", onSelect)
+    
+    const syncToMain = syncApis(api, mainApi)
+    const syncFromMain = syncApis(mainApi, api)
+
+    api.on("select", syncFromMain)
+    mainApi.on("select", syncToMain)
+
+
+    return () => {
+      mainApi.off("select", onSelect)
+      api.off("select", syncFromMain)
+      mainApi.off("select", syncToMain)
+    }
+  }, [api, mainApi])
+
+  const handleThumbClick = (index: number) => {
+    mainApi?.scrollTo(index);
+  }
+
+  return (
+    <div className="space-y-4">
+      <Carousel setApi={setMainApi}>
+        <CarouselContent>
+          {allImages.map((url, index) => (
+            <CarouselItem key={index}>
+              <Image
+                src={url}
+                alt={`Image ${index + 1} of ${hotel.name}`}
+                data-ai-hint="hotel exterior large"
+                width={1200}
+                height={800}
+                className="rounded-xl object-cover w-full aspect-[3/2] shadow-lg"
+              />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-4" />
+        <CarouselNext className="right-4" />
+      </Carousel>
+
+      {allImages.length > 1 && (
+        <Carousel setApi={setApi} opts={{ align: "start", slidesToScroll: 1, containScroll: "trimSnaps" }}>
+          <CarouselContent className="-ml-2">
+            {allImages.map((url, index) => (
+              <CarouselItem key={index} className="basis-1/4 md:basis-1/5 lg:basis-1/6 pl-2">
+                <div 
+                  className={`aspect-square rounded-md overflow-hidden cursor-pointer transition-opacity ${index === current ? 'opacity-100 ring-2 ring-primary ring-offset-2' : 'opacity-60 hover:opacity-100'}`}
+                  onClick={() => handleThumbClick(index)}
+                >
+                  <Image
+                    src={url}
+                    alt={`Thumbnail ${index + 1} of ${hotel.name}`}
+                    data-ai-hint="hotel interior"
+                    width={200}
+                    height={200}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      )}
+    </div>
+  )
+}
+
 function HotelDetailsContent() {
   const searchParams = useSearchParams();
   const hotelDataString = searchParams.get('data');
@@ -104,8 +206,6 @@ function HotelDetailsContent() {
   }
 
   const hotel: Hotel = JSON.parse(decodeURIComponent(hotelDataString));
-  const mainImageUrl = hotel.imageUrls && hotel.imageUrls.length > 0 ? hotel.imageUrls[0] : `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/1200/800`;
-  const galleryImageUrls = hotel.imageUrls?.slice(1) || [];
 
   return (
     <div className="container mx-auto px-5">
@@ -118,30 +218,7 @@ function HotelDetailsContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-            <Image
-                src={mainImageUrl}
-                alt={`Image of ${hotel.name}`}
-                data-ai-hint="hotel exterior large"
-                width={1200}
-                height={800}
-                className="rounded-xl object-cover w-full aspect-[3/2] shadow-lg"
-            />
-            {galleryImageUrls.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {galleryImageUrls.map((url, index) => (
-                        <div key={index} className="aspect-w-1 aspect-h-1">
-                             <Image
-                                src={url}
-                                alt={`Gallery image ${index + 1} of ${hotel.name}`}
-                                data-ai-hint="hotel interior"
-                                width={300}
-                                height={200}
-                                className="rounded-lg object-cover w-full h-full shadow-md"
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
+            <ImageGallery hotel={hotel} />
         </div>
         <div className="lg:col-span-1">
             <Card>
