@@ -13,10 +13,13 @@ import { addHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, MapPin, User, Mail, Phone, TrendingUp, Percent } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
 ];
+
+const allowedCities = ["Delhi", "Mumbai", "Goa", "Jaipur"];
 
 export default function AddPropertyPage() {
   const firestore = useFirestore();
@@ -25,6 +28,7 @@ export default function AddPropertyPage() {
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState("");
+  const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -56,15 +60,25 @@ export default function AddPropertyPage() {
       });
       return;
     }
+    
+    if (!city) {
+      toast({
+        variant: "destructive",
+        title: "City is required",
+        description: "Please select a city for the property.",
+      });
+      return;
+    }
 
     const hotelData = {
       name,
+      city,
       address,
       description,
       price: Number(price),
       rating: Number(rating),
       amenities: selectedAmenities,
-      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`], // Assign a placeholder
+      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`],
       latitude: Number(latitude),
       longitude: Number(longitude),
       managerName,
@@ -108,9 +122,22 @@ export default function AddPropertyPage() {
                         <Label htmlFor="name">Property Name</Label>
                         <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur, Rajasthan" value={address} onChange={e => setAddress(e.target.value)} required />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                            <Select onValueChange={setCity} value={city}>
+                                <SelectTrigger id="city">
+                                    <SelectValue placeholder="Select a city" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {allowedCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="address">Street Address</Label>
+                            <Input id="address" placeholder="e.g., 123 Palace Road" value={address} onChange={e => setAddress(e.target.value)} required />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description">Description</Label>

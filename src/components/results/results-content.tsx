@@ -29,9 +29,9 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
         return;
       }
       const destinationLower = destination.toLowerCase();
+      // Exact match on city
       const results = hotels.filter(hotel => 
-        hotel.address.toLowerCase().includes(destinationLower) ||
-        hotel.name.toLowerCase().includes(destinationLower)
+        hotel.city.toLowerCase() === destinationLower
       );
       setFilteredHotels(results);
     }

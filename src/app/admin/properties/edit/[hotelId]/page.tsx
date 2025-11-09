@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useTransition, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,14 +12,17 @@ import { useFirestore } from "@/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { updateHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Image as ImageIcon, MapPin, User, Mail, Phone, TrendingUp, Percent } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, User, Mail, Phone, TrendingUp, Percent } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
 ];
+
+const allowedCities = ["Delhi", "Mumbai", "Goa", "Jaipur"];
 
 function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const firestore = useFirestore();
@@ -30,6 +32,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [loading, setLoading] = useState(true);
 
   const [name, setName] = useState("");
+  const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -55,6 +58,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
         if (hotelSnap.exists()) {
           const hotelData = hotelSnap.data() as Omit<Hotel, 'id'>;
           setName(hotelData.name);
+          setCity(hotelData.city || "");
           setAddress(hotelData.address);
           setDescription(hotelData.description);
           setPrice(String(hotelData.price));
@@ -107,15 +111,24 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       });
       return;
     }
+     if (!city) {
+      toast({
+        variant: "destructive",
+        title: "City is required",
+        description: "Please select a city for the property.",
+      });
+      return;
+    }
 
     const hotelData: Partial<Hotel> = {
       name,
+      city,
       address,
       description,
       price: Number(price),
       rating: Number(rating),
       amenities: selectedAmenities,
-      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`], // Assign a placeholder
+      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`],
       latitude: Number(latitude),
       longitude: Number(longitude),
       managerName,
@@ -157,9 +170,22 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                         <Label htmlFor="name">Property Name</Label>
                         <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur, Rajasthan" value={address} onChange={e => setAddress(e.target.value)} required />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                            <Select onValueChange={setCity} value={city}>
+                                <SelectTrigger id="city">
+                                    <SelectValue placeholder="Select a city" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {allowedCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="address">Street Address</Label>
+                            <Input id="address" placeholder="e.g., 123 Palace Road" value={address} onChange={e => setAddress(e.target.value)} required />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="description">Description</Label>
@@ -269,9 +295,15 @@ function EditPropertyFormSkeleton() {
                         <Skeleton className="h-4 w-24" />
                         <Skeleton className="h-10 w-full" />
                     </div>
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-10 w-full" />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Skeleton className="h-4 w-24" />
