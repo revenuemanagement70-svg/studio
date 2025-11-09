@@ -26,6 +26,41 @@
       },
       "required": ["uid", "email"]
     },
+    "hotel": {
+      "title": "Hotel",
+      "description": "A hotel property listed on the platform.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the hotel."
+        },
+        "address": {
+          "type": "string",
+          "description": "The address of the hotel."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price per night of the hotel."
+        },
+        "rating": {
+          "type": "number",
+          "description": "The rating of the hotel (out of 5)."
+        },
+        "amenities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of amenities offered by the hotel."
+        },
+        "description": {
+          "type": "string",
+          "description": "A short description of the hotel."
+        }
+      },
+      "required": ["name", "address", "price", "rating", "description"]
+    },
     "favoriteHotel": {
       "title": "Favorite Hotel",
       "description": "A hotel that a user has saved as a favorite.",
@@ -66,6 +101,12 @@
     "providers": ["anonymous", "google.com", "password"]
   },
   "firestore": {
+    "/hotels/{hotelId}": {
+        "schema": {
+            "$ref": "#/entities/hotel"
+        },
+        "description": "A list of all hotel properties."
+    },
     "/users/{userId}/favorites/{favoriteId}": {
       "schema": {
         "$ref": "#/entities/favoriteHotel"

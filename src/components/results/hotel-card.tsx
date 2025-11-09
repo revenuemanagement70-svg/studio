@@ -6,7 +6,7 @@ import { Star, Wifi, ParkingCircle, UtensilsCrossed, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
+import type { hotel as Hotel } from '@/lib/types';
 import React, { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { useFavorites } from '@/firebase/firestore/use-favorites';
@@ -14,8 +14,6 @@ import { saveFavorite, removeFavorite } from '@/firebase/firestore/favorites';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'next/navigation';
-
-type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
 
 interface HotelCardProps {
   hotel: Hotel;

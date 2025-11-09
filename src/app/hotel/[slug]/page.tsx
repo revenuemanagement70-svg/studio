@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail } from 'lucide-react';
-import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
+import type { hotel as Hotel } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
-
-type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'wifi': <Wifi className="size-4" />,

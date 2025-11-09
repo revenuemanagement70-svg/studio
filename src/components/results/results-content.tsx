@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { HotelCard } from '@/components/results/hotel-card';
 import { HotelCardSkeleton } from '@/components/results/hotel-card-skeleton';
 import { getHotelRecommendations } from '@/app/lib/actions';
-import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
+import type { PersonalizedHotelRecommendationsOutput } from '@/app/lib/actions';
 import { Button } from '../ui/button';
 
 interface ResultsContentProps {
