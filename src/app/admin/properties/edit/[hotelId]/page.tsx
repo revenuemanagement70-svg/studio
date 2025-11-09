@@ -13,7 +13,7 @@ import { useFirestore } from "@/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { updateHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Image as ImageIcon } from "lucide-react";
+import { Loader2, ArrowLeft, Image as ImageIcon, MapPin } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -63,6 +63,9 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [rating, setRating] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+
 
   const parsedUrls = useMemo(() => {
     return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
@@ -86,6 +89,8 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setRating(String(hotelData.rating));
           setSelectedAmenities(hotelData.amenities || []);
           setImageUrls((hotelData.imageUrls || []).join('\n'));
+          setLatitude(String(hotelData.latitude || ""));
+          setLongitude(String(hotelData.longitude || ""));
         } else {
           toast({
             variant: "destructive",
@@ -135,6 +140,8 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       rating: Number(rating),
       amenities: selectedAmenities,
       imageUrls: parsedUrls,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
     };
     
     if (hotelData.imageUrls?.length === 0) {
@@ -215,6 +222,25 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
         </Card>
         
         <Card>
+          <CardContent className="pt-6 space-y-6">
+            <div className="space-y-2">
+                <Label className="flex items-center gap-2"><MapPin className="size-4"/> Location Coordinates</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="latitude">Latitude</Label>
+                        <Input id="latitude" type="number" step="any" placeholder="e.g., 26.9124" value={latitude} onChange={e => setLatitude(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="longitude">Longitude</Label>
+                        <Input id="longitude" type="number" step="any" placeholder="e.g., 75.7873" value={longitude} onChange={e => setLongitude(e.target.value)} required />
+                    </div>
+                </div>
+                 <p className="text-xs text-muted-foreground pt-1">You can get these from Google Maps by right-clicking on a location.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
             <CardContent className="pt-6 space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
@@ -257,13 +283,15 @@ function EditPropertyFormSkeleton() {
                         <Skeleton className="h-4 w-24" />
                         <Skeleton className="h-20 w-full" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="space-y-2">
-                                <Skeleton className="h-4 w-24" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
                     </div>
                      <div className="space-y-4">
                         <Skeleton className="h-4 w-32" />
@@ -274,6 +302,23 @@ function EditPropertyFormSkeleton() {
                                     <Skeleton className="h-5 w-20" />
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardContent className="pt-6 space-y-6">
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                             <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
                         </div>
                     </div>
                 </CardContent>

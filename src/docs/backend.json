@@ -69,9 +69,17 @@
             "format": "uri"
           },
           "description": "A list of URLs for the hotel's photos."
+        },
+        "latitude": {
+            "type": "number",
+            "description": "The latitude of the hotel's location."
+        },
+        "longitude": {
+            "type": "number",
+            "description": "The longitude of the hotel's location."
         }
       },
-      "required": ["id", "name", "address", "price", "rating", "description", "imageUrls"]
+      "required": ["id", "name", "address", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
     },
     "favoriteHotel": {
       "title": "Favorite Hotel Reference",

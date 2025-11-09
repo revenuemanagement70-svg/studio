@@ -8,4 +8,6 @@ export type hotel = {
     amenities: string[];
     description: string;
     imageUrls: string[];
+    latitude?: number;
+    longitude?: number;
 };

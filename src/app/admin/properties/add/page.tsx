@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useFirestore } from "@/firebase";
 import { addHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon, MapPin } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const allAmenities = [
@@ -59,6 +59,8 @@ export default function AddPropertyPage() {
   const [rating, setRating] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
   const parsedUrls = useMemo(() => {
     return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
@@ -91,6 +93,8 @@ export default function AddPropertyPage() {
       rating: Number(rating),
       amenities: selectedAmenities,
       imageUrls: parsedUrls,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
     };
 
     if (hotelData.imageUrls.length === 0) {
@@ -170,6 +174,25 @@ export default function AddPropertyPage() {
                     </div>
                 </div>
             </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            <div className="space-y-2">
+                <Label className="flex items-center gap-2"><MapPin className="size-4"/> Location Coordinates</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="latitude">Latitude</Label>
+                        <Input id="latitude" type="number" step="any" placeholder="e.g., 26.9124" value={latitude} onChange={e => setLatitude(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="longitude">Longitude</Label>
+                        <Input id="longitude" type="number" step="any" placeholder="e.g., 75.7873" value={longitude} onChange={e => setLongitude(e.target.value)} required />
+                    </div>
+                </div>
+                 <p className="text-xs text-muted-foreground pt-1">You can get these from Google Maps by right-clicking on a location.</p>
+            </div>
+          </CardContent>
         </Card>
         
         <Card>
