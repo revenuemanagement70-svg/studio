@@ -28,15 +28,16 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [anonymousLoading, setAnonymousLoading] = useState(false);
 
   const title = mode === 'login' ? 'Welcome Back!' : 'Create an Account';
   const description = mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.';
-  const buttonText = mode === 'login' ? 'Log In as Anonymous User' : 'Sign Up';
+  const buttonText = mode === 'login' ? 'Log In' : 'Sign Up';
   const alternativeText = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
   const alternativeLink = mode === 'login' ? '/signup' : '/login';
   const alternativeLinkText = mode === 'login' ? 'Sign Up' : 'Log In';
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -46,17 +47,18 @@ export function AuthForm({ mode }: AuthFormProps) {
       setLoading(false);
       return;
     }
+    
+    if (!email || !password) {
+        setError('Email and password are required.');
+        setLoading(false);
+        return;
+    }
 
     try {
       if (mode === 'signup') {
-        if (!email || !password) {
-            setError('Email and password are required for sign up.');
-            setLoading(false);
-            return;
-        }
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        await signInAnonymously(auth);
+        await signInWithEmailAndPassword(auth, email, password);
       }
       router.push('/');
     } catch (err: any) {
@@ -66,6 +68,27 @@ export function AuthForm({ mode }: AuthFormProps) {
       setLoading(false);
     }
   };
+  
+  const handleAnonymousSignIn = async () => {
+    setError(null);
+    setAnonymousLoading(true);
+
+    if (!auth) {
+      setError('Authentication service is not available.');
+      setAnonymousLoading(false);
+      return;
+    }
+
+    try {
+        await signInAnonymously(auth);
+        router.push('/');
+    } catch (err: any) {
+        const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';
+        setError(friendlyError.charAt(0).toUpperCase() + friendlyError.slice(1));
+    } finally {
+        setAnonymousLoading(false);
+    }
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -74,52 +97,52 @@ export function AuthForm({ mode }: AuthFormProps) {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' ? (
-                <>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                        id="email"
-                        type="email"
-                        placeholder="m@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                        id="password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                        />
-                    </div>
-                </>
-            ) : (
-                <div className="p-4 text-center bg-secondary rounded-md">
-                    <p className="text-sm text-muted-foreground">
-                        For development, click below to sign in as an anonymous user.
-                    </p>
-                </div>
-            )}
-
+        <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+              id="email"
+              type="email"
+              placeholder="m@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading || anonymousLoading}
+              />
+          </div>
+          <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading || anonymousLoading}
+              />
+          </div>
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || anonymousLoading}>
             {loading && <Loader2 className="animate-spin" />}
             {loading ? 'Please wait...' : buttonText}
           </Button>
         </form>
+
         <div className="relative my-6">
           <Separator />
           <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">OR</span>
         </div>
-        <GoogleSignInButton setLoading={setLoading} setError={setError} />
+
+        <div className='flex flex-col gap-4'>
+            <GoogleSignInButton setLoading={setLoading} setError={setError} />
+
+            {mode === 'login' && (
+                 <Button onClick={handleAnonymousSignIn} variant="secondary" className="w-full" disabled={loading || anonymousLoading}>
+                    {anonymousLoading && <Loader2 className="animate-spin" />}
+                    {anonymousLoading ? 'Signing in...' : 'Log In as Anonymous User'}
+                </Button>
+            )}
+        </div>
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
