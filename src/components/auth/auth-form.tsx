@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signInAnonymously,
 } from 'firebase/auth';
 import { useAuth } from '@/firebase';
