@@ -47,9 +47,9 @@ const prompt = ai.definePrompt({
   output: {schema: PersonalizedHotelRecommendationsOutputSchema},
   prompt: `You are a hotel recommendation expert. A user is planning a trip to {{destination}} from {{checkInDate}} to {{checkOutDate}} with {{numberOfGuests}} guests.
 
-  {% if budget %}The user's budget is {{budget}}.{% endif %}
-  {% if amenities %}The user is looking for hotels with the following amenities: {{amenities}}.{% endif %}
-  {% if travelStyle %}The user's travel style is {{travelStyle}}.{% endif %}
+  {{#if budget}}The user's budget is {{budget}}.{{/if}}
+  {{#if amenities}}The user is looking for hotels with the following amenities: {{amenities}}.{{/if}}
+  {{#if travelStyle}}The user's travel style is {{travelStyle}}.{{/if}}
 
   Based on this information, recommend a few hotels in {{destination}} that would be a good fit for the user. Provide the hotel name, address, price per night, rating, list of amenities, and a short description.  Include at least 3 recommendations.`,
 });
