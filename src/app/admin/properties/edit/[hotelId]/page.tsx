@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition, useMemo } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -16,13 +16,10 @@ import { Loader2, ArrowLeft, MapPin, User, Mail, Phone, TrendingUp, Percent } fr
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
 ];
-
-const allowedCities = ["Delhi", "Mumbai", "Goa", "Jaipur"];
 
 function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const firestore = useFirestore();
@@ -32,7 +29,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [loading, setLoading] = useState(true);
 
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -58,7 +54,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
         if (hotelSnap.exists()) {
           const hotelData = hotelSnap.data() as Omit<Hotel, 'id'>;
           setName(hotelData.name);
-          setCity(hotelData.city || "");
           setAddress(hotelData.address);
           setDescription(hotelData.description);
           setPrice(String(hotelData.price));
@@ -111,18 +106,9 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       });
       return;
     }
-     if (!city) {
-      toast({
-        variant: "destructive",
-        title: "City is required",
-        description: "Please select a city for the property.",
-      });
-      return;
-    }
 
     const hotelData: Partial<Hotel> = {
       name,
-      city,
       address,
       description,
       price: Number(price),
@@ -166,25 +152,14 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
             <CardContent className="pt-6">
                 <h3 className="font-headline font-bold text-lg mb-4">Basic Information</h3>
                 <div className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Property Name</Label>
-                        <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
-                            <Select onValueChange={setCity} value={city}>
-                                <SelectTrigger id="city">
-                                    <SelectValue placeholder="Select a city" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {allowedCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="name">Property Name</Label>
+                            <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="address">Street Address</Label>
-                            <Input id="address" placeholder="e.g., 123 Palace Road" value={address} onChange={e => setAddress(e.target.value)} required />
+                            <Label htmlFor="address">Address</Label>
+                            <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur" value={address} onChange={e => setAddress(e.target.value)} required />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -291,11 +266,7 @@ function EditPropertyFormSkeleton() {
         <div className="space-y-8">
             <Card>
                 <CardContent className="pt-6 space-y-6">
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-10 w-full" />
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Skeleton className="h-4 w-24" />
                             <Skeleton className="h-10 w-full" />
