@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   createUserWithEmailAndPassword,
   signInAnonymously,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
