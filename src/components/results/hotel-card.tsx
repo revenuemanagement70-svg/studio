@@ -48,10 +48,10 @@ export function HotelCard({ hotel, source = 'results' }: HotelCardProps) {
   
   const searchParams = useSearchParams();
   
-  const isFavorite = favorites?.some(fav => fav.name === hotel.name);
+  const isFavorite = favorites?.some(fav => fav.id === hotel.id);
 
   const handleFavoriteToggle = async () => {
-    if (!user || !firestore) {
+    if (!user || !firestore || !hotel.id) {
       toast({
         variant: "destructive",
         title: "Authentication Error",
@@ -64,13 +64,13 @@ export function HotelCard({ hotel, source = 'results' }: HotelCardProps) {
 
     try {
       if (isFavorite) {
-        await removeFavorite(firestore, user.uid, hotel.name.replace(/\s+/g, '-').toLowerCase());
+        await removeFavorite(firestore, user.uid, hotel.id);
         toast({
           title: "Removed from Favorites",
           description: `${hotel.name} has been removed from your favorites.`,
         });
       } else {
-        await saveFavorite(firestore, user.uid, hotel);
+        await saveFavorite(firestore, user.uid, hotel.id);
         toast({
           title: "Added to Favorites",
           description: `${hotel.name} has been added to your favorites.`,

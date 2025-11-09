@@ -1,21 +1,20 @@
 'use client';
 
 import { doc, setDoc, deleteDoc, Firestore } from 'firebase/firestore';
-import type { hotel as Hotel } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
-export async function saveFavorite(db: Firestore, userId: string, hotel: Hotel) {
-    const hotelId = hotel.name.replace(/\s+/g, '-').toLowerCase();
+export async function saveFavorite(db: Firestore, userId: string, hotelId: string) {
     const favoriteRef = doc(db, 'users', userId, 'favorites', hotelId);
+    const favoriteData = { hotelId };
     
-    setDoc(favoriteRef, hotel)
+    setDoc(favoriteRef, favoriteData)
     .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
             path: favoriteRef.path,
             operation: 'create',
-            requestResourceData: hotel,
+            requestResourceData: favoriteData,
         });
         errorEmitter.emit('permission-error', permissionError);
     });

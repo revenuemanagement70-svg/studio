@@ -65,8 +65,8 @@ function FavoritesContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {favorites.map((hotel, index) => (
-            <HotelCard key={hotel.name + index} hotel={hotel} source="favorites" />
+          {favorites.map((hotel) => (
+            <HotelCard key={hotel.id} hotel={hotel} source="favorites" />
           ))}
         </div>
       )}
