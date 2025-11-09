@@ -1,11 +1,11 @@
 'use client';
 
-import { Suspense, useState, useEffect, useTransition } from 'react';
+import { Suspense, useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail, Calendar, Users, Loader2 } from 'lucide-react';
-import type { hotel as Hotel } from '@/lib/types';
+import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail, Calendar, Users, Loader2, AlertCircle } from 'lucide-react';
+import type { hotel as Hotel, RoomAvailability } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import React from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { createBooking } from '@/firebase/firestore/bookings';
-import { format, differenceInDays } from 'date-fns';
+import { getAvailabilityForDateRange } from '@/firebase/firestore/availability';
+import { format, differenceInDays, parseISO } from 'date-fns';
 import {
   Carousel,
   CarouselContent,
@@ -46,7 +47,23 @@ function getAmenityIcon(amenity: string): React.ReactNode {
     return null;
 }
 
-function BookingDialog({ hotel, checkin, checkout, guests }: { hotel: Hotel; checkin?: string, checkout?: string, guests?: string }) {
+function BookingDialog({ 
+    hotel, 
+    checkin, 
+    checkout, 
+    guests, 
+    availability,
+    totalPrice,
+    nights
+}: { 
+    hotel: Hotel; 
+    checkin?: string; 
+    checkout?: string; 
+    guests?: string;
+    availability: { status: 'available' | 'unavailable' | 'loading' | 'error', message?: string };
+    totalPrice: number;
+    nights: number;
+}) {
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
     const { user } = useUser();
@@ -67,9 +84,7 @@ function BookingDialog({ hotel, checkin, checkout, guests }: { hotel: Hotel; che
         const checkinDate = checkin ? new Date(checkin) : new Date();
         const checkoutDate = checkout ? new Date(checkout) : new Date(new Date().setDate(new Date().getDate() + 1));
         const numGuests = guests ? parseInt(guests, 10) : 1;
-        const nights = differenceInDays(checkoutDate, checkinDate) || 1;
-        const totalPrice = hotel.price * nights;
-
+        
         startTransition(async () => {
             try {
                 const bookingId = await createBooking(firestore, {
@@ -80,8 +95,7 @@ function BookingDialog({ hotel, checkin, checkout, guests }: { hotel: Hotel; che
                     userEmail: email,
                     checkin: format(checkinDate, 'yyyy-MM-dd'),
                     checkout: format(checkoutDate, 'yyyy-MM-dd'),
-                    guests: numGuests,
-                    totalPrice: totalPrice
+                    guests: numGuests
                 });
 
                 toast({
@@ -93,19 +107,16 @@ function BookingDialog({ hotel, checkin, checkout, guests }: { hotel: Hotel; che
                 toast({
                     variant: "destructive",
                     title: "Booking Failed",
-                    description: error instanceof Error ? error.message : "An unknown error occurred.",
+                    description: error instanceof Error ? error.message : "An unknown error occurred. Rooms might have been sold out.",
                 });
             }
         });
     };
     
-    const nights = (checkin && checkout) ? (differenceInDays(new Date(checkout), new Date(checkin)) || 1) : 1;
-    const totalPrice = hotel.price * nights;
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12">
+                <Button size="lg" className="w-full bg-gradient-to-r from-primary to-accent font-bold text-lg h-12" disabled={availability.status !== 'available'}>
                     Book Now
                 </Button>
             </DialogTrigger>
@@ -259,13 +270,66 @@ function ImageGallery({ hotel }: { hotel: Hotel }) {
 
 function HotelDetailsContent() {
   const searchParams = useSearchParams();
+  const firestore = useFirestore();
+
   const hotelDataString = searchParams.get('data');
   const backLink = searchParams.get('back') || '/';
   const checkin = searchParams.get('checkin');
   const checkout = searchParams.get('checkout');
   const guests = searchParams.get('guests');
 
-  if (!hotelDataString) {
+  const [availability, setAvailability] = useState<{ status: 'loading' | 'available' | 'unavailable' | 'error', message?: string }>({ status: 'loading' });
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  const hotel: Hotel | null = useMemo(() => {
+    if (!hotelDataString) return null;
+    return JSON.parse(decodeURIComponent(hotelDataString));
+  }, [hotelDataString]);
+
+  const nights = useMemo(() => {
+      if (!checkin || !checkout) return 0;
+      return differenceInDays(parseISO(checkout), parseISO(checkin)) || 1;
+  }, [checkin, checkout]);
+
+
+  useEffect(() => {
+    if (!firestore || !hotel || !checkin || !checkout) {
+        setAvailability({ status: 'unavailable', message: 'Please select dates to check availability.' });
+        return;
+    }
+
+    setAvailability({ status: 'loading' });
+    const checkinDate = parseISO(checkin);
+    const checkoutDate = parseISO(checkout);
+
+    getAvailabilityForDateRange(firestore, hotel.id, checkinDate, checkoutDate)
+        .then(availabilities => {
+            const expectedDays = differenceInDays(checkoutDate, checkinDate);
+            if (availabilities.length < expectedDays) {
+                setAvailability({ status: 'unavailable', message: 'Pricing not available for all selected dates.' });
+                return;
+            }
+
+            let priceSum = 0;
+            for (const day of availabilities) {
+                if (day.roomsAvailable < 1) {
+                    setAvailability({ status: 'unavailable', message: `Sold out on ${day.date}.`});
+                    return;
+                }
+                priceSum += day.price;
+            }
+            
+            setTotalPrice(priceSum);
+            setAvailability({ status: 'available' });
+        })
+        .catch(error => {
+            console.error(error);
+            setAvailability({ status: 'error', message: 'Could not fetch availability.' });
+        });
+
+  }, [firestore, hotel, checkin, checkout]);
+
+  if (!hotel) {
     return (
       <div className="container mx-auto px-5 text-center">
         <h1 className="text-2xl font-bold font-headline my-8">Hotel not found</h1>
@@ -277,7 +341,6 @@ function HotelDetailsContent() {
     );
   }
 
-  const hotel: Hotel = JSON.parse(decodeURIComponent(hotelDataString));
 
   return (
     <div className="container mx-auto px-5">
@@ -322,14 +385,30 @@ function HotelDetailsContent() {
 
                     <div className="mt-auto flex flex-col justify-between items-center gap-4 pt-6 border-t">
                         <div className="text-left w-full">
-                            <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
-                            <span className="text-md text-muted-foreground"> / night</span>
+                           {availability.status === 'loading' && <p>Checking price...</p>}
+                           {availability.status === 'error' && <p className="text-destructive text-sm font-semibold">{availability.message}</p>}
+                           {availability.status === 'unavailable' && <p className="text-destructive text-sm font-semibold flex items-center gap-2"><AlertCircle className="size-4"/>{availability.message}</p>}
+                           {availability.status === 'available' && (
+                            <>
+                                <span className="text-3xl font-bold font-headline">₹{totalPrice.toLocaleString('en-IN')}</span>
+                                <span className="text-md text-muted-foreground"> / {nights} night{nights > 1 ? 's' : ''}</span>
+                            </>
+                           )}
+                           {!checkin && !checkout && (
+                            <>
+                                <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
+                                <span className="text-md text-muted-foreground"> / night</span>
+                            </>
+                           )}
                         </div>
                         <BookingDialog 
                           hotel={hotel} 
                           checkin={checkin || undefined} 
                           checkout={checkout || undefined}
                           guests={guests || undefined}
+                          availability={availability}
+                          totalPrice={totalPrice}
+                          nights={nights}
                         />
                     </div>
                 </CardContent>

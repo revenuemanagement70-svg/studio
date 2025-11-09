@@ -1,6 +1,6 @@
 'use client';
 
-import { collection, writeBatch, Firestore, query, getDocs, where } from 'firebase/firestore';
+import { collection, writeBatch, Firestore, query, getDocs, where, doc, getDoc, runTransaction, DocumentReference, Transaction } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { format, eachDayOfInterval } from 'date-fns';
@@ -58,7 +58,7 @@ export async function getAvailabilityForHotel(
     hotelId: string
 ): Promise<RoomAvailability[]> {
     const availabilityCollectionRef = collection(db, 'hotels', hotelId, 'availability');
-    const q = query(availabilityCollectionRef, orderBy('date'));
+    const q = query(availabilityCollectionRef);
 
     try {
         const querySnapshot = await getDocs(q);
@@ -74,28 +74,68 @@ export async function getAvailabilityForHotel(
 }
 
 /**
- * Retrieves availability for a specific hotel and date.
+ * Retrieves availability for a specific hotel and date range.
  */
-export async function getAvailabilityForDate(
+export async function getAvailabilityForDateRange(
     db: Firestore,
     hotelId: string,
-    date: Date
-): Promise<RoomAvailability | null> {
-    const dateString = format(date, 'yyyy-MM-dd');
-    const availabilityDocRef = doc(db, 'hotels', hotelId, 'availability', dateString);
+    startDate: Date,
+    endDate: Date
+): Promise<RoomAvailability[]> {
+    const availabilityCollectionRef = collection(db, 'hotels', hotelId, 'availability');
+    const startString = format(startDate, 'yyyy-MM-dd');
+    const endString = format(endDate, 'yyyy-MM-dd');
+    
+    const q = query(availabilityCollectionRef, where('date', '>=', startString), where('date', '<=', endString));
 
     try {
-        const docSnap = await getDoc(availabilityDocRef);
-        if (docSnap.exists()) {
-            return { id: docSnap.id, ...docSnap.data() } as RoomAvailability;
-        }
-        return null;
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RoomAvailability));
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
-            path: availabilityDocRef.path,
-            operation: 'get',
+            path: availabilityCollectionRef.path,
+            operation: 'list',
         });
         errorEmitter.emit('permission-error', permissionError);
         throw serverError;
     }
+}
+
+/**
+ * Transactionally checks availability and decrements room counts for a date range.
+ * Throws an error if any date is unavailable or rooms are sold out.
+ */
+export async function checkAndDecrementAvailability(
+    transaction: Transaction,
+    db: Firestore,
+    hotelId: string,
+    startDate: Date,
+    endDate: Date
+): Promise<number> {
+    const dates = eachDayOfInterval({ start: startDate, end: endDate });
+    let totalPrice = 0;
+    
+    const availabilityDocsRefs = dates.map(date => {
+        const dateString = format(date, 'yyyy-MM-dd');
+        return doc(db, 'hotels', hotelId, 'availability', dateString);
+    });
+
+    const availabilityDocs = await transaction.getAll(...availabilityDocsRefs);
+
+    for (let i = 0; i < availabilityDocs.length; i++) {
+        const docSnap = availabilityDocs[i];
+        if (!docSnap.exists()) {
+            throw new Error(`No availability configured for ${dates[i]}`);
+        }
+        
+        const data = docSnap.data() as RoomAvailability;
+        if (data.roomsAvailable < 1) {
+            throw new Error(`Sold out on ${data.date}.`);
+        }
+        
+        totalPrice += data.price;
+        transaction.update(docSnap.ref, { roomsAvailable: data.roomsAvailable - 1 });
+    }
+
+    return totalPrice;
 }
