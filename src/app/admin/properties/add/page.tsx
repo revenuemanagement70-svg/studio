@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useFirestore } from "@/firebase";
 import { addHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Image as ImageIcon, MapPin } from "lucide-react";
+import { Loader2, Image as ImageIcon, MapPin, User, Mail, Phone } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const allAmenities = [
@@ -61,6 +61,9 @@ export default function AddPropertyPage() {
   const [imageUrls, setImageUrls] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
 
   const parsedUrls = useMemo(() => {
     return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
@@ -95,6 +98,9 @@ export default function AddPropertyPage() {
       imageUrls: parsedUrls,
       latitude: Number(latitude),
       longitude: Number(longitude),
+      managerName,
+      contactEmail,
+      contactPhone,
     };
 
     if (hotelData.imageUrls.length === 0) {
@@ -134,6 +140,7 @@ export default function AddPropertyPage() {
       <form className="space-y-8" onSubmit={handleSubmit}>
         <Card>
             <CardContent className="pt-6">
+                <h3 className="font-headline font-bold text-lg mb-4">Basic Information</h3>
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="name">Property Name</Label>
@@ -178,25 +185,44 @@ export default function AddPropertyPage() {
 
         <Card>
           <CardContent className="pt-6 space-y-6">
-            <div className="space-y-2">
-                <Label className="flex items-center gap-2"><MapPin className="size-4"/> Location Coordinates</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="latitude">Latitude</Label>
-                        <Input id="latitude" type="number" step="any" placeholder="e.g., 26.9124" value={latitude} onChange={e => setLatitude(e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="longitude">Longitude</Label>
-                        <Input id="longitude" type="number" step="any" placeholder="e.g., 75.7873" value={longitude} onChange={e => setLongitude(e.target.value)} required />
-                    </div>
+            <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><User className="size-5" /> Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="managerName">Manager Name</Label>
+                    <Input id="managerName" placeholder="e.g., Ramesh Kumar" value={managerName} onChange={e => setManagerName(e.target.value)} />
                 </div>
-                 <p className="text-xs text-muted-foreground pt-1">You can get these from Google Maps by right-clicking on a location.</p>
+                <div className="space-y-2">
+                    <Label htmlFor="contactPhone">Contact Phone</Label>
+                    <Input id="contactPhone" type="tel" placeholder="e.g., 9876543210" value={contactPhone} onChange={e => setContactPhone(e.target.value)} />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Input id="contactEmail" type="email" placeholder="e.g., contact@grandheritage.com" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+                </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><MapPin className="size-5"/> Location Coordinates</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input id="latitude" type="number" step="any" placeholder="e.g., 26.9124" value={latitude} onChange={e => setLatitude(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input id="longitude" type="number" step="any" placeholder="e.g., 75.7873" value={longitude} onChange={e => setLongitude(e.target.value)} required />
+                </div>
+            </div>
+            <p className="text-xs text-muted-foreground pt-1">You can get these from Google Maps by right-clicking on a location.</p>
           </CardContent>
         </Card>
         
         <Card>
             <CardContent className="pt-6 space-y-6">
+                 <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><ImageIcon className="size-5"/> Property Images</h3>
                 <div className="space-y-2">
                     <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
                     <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4} />

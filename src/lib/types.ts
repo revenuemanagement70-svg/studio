@@ -10,4 +10,7 @@ export type hotel = {
     imageUrls: string[];
     latitude?: number;
     longitude?: number;
+    managerName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
 };
