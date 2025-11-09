@@ -16,6 +16,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Image as ImageIcon } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const allAmenities = [
+  "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
+];
 
 function ImagePreviews({ urls }: { urls: string[] }) {
     if (urls.length === 0) {
@@ -56,7 +61,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
-  const [amenities, setAmenities] = useState("");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState("");
 
   const parsedUrls = useMemo(() => {
@@ -79,7 +84,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setDescription(hotelData.description);
           setPrice(String(hotelData.price));
           setRating(String(hotelData.rating));
-          setAmenities(hotelData.amenities.join(', '));
+          setSelectedAmenities(hotelData.amenities || []);
           setImageUrls((hotelData.imageUrls || []).join('\n'));
         } else {
           toast({
@@ -102,6 +107,14 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
 
     fetchHotel();
   }, [firestore, hotelId, router, toast]);
+  
+  const handleAmenityChange = (amenity: string) => {
+    setSelectedAmenities(prev => 
+      prev.includes(amenity) 
+        ? prev.filter(a => a !== amenity)
+        : [...prev, amenity]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -120,7 +133,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       description,
       price: Number(price),
       rating: Number(rating),
-      amenities: amenities.split(',').map(a => a.trim()),
+      amenities: selectedAmenities,
       imageUrls: parsedUrls,
     };
     
@@ -172,7 +185,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                         <Label htmlFor="description">Description</Label>
                         <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="price">Price per night (₹)</Label>
                             <Input id="price" type="number" placeholder="e.g., 7500" value={price} onChange={e => setPrice(e.target.value)} required />
@@ -181,9 +194,20 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                             <Label htmlFor="rating">Rating (1-5)</Label>
                             <Input id="rating" type="number" step="0.1" min="1" max="5" placeholder="e.g., 4.8" value={rating} onChange={e => setRating(e.target.value)} required />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="amenities">Amenities (comma-separated)</Label>
-                            <Input id="amenities" placeholder="e.g., wifi, pool, gym" value={amenities} onChange={e => setAmenities(e.target.value)} required />
+                    </div>
+                     <div className="space-y-4">
+                        <Label>Amenities & Facilities</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 rounded-lg border p-4">
+                            {allAmenities.map((amenity) => (
+                                <div key={amenity} className="flex items-center gap-2">
+                                    <Checkbox 
+                                        id={`amenity-${amenity}`} 
+                                        checked={selectedAmenities.includes(amenity)}
+                                        onCheckedChange={() => handleAmenityChange(amenity)}
+                                    />
+                                    <Label htmlFor={`amenity-${amenity}`} className="capitalize font-normal cursor-pointer">{amenity}</Label>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -240,6 +264,17 @@ function EditPropertyFormSkeleton() {
                                 <Skeleton className="h-10 w-full" />
                             </div>
                         ))}
+                    </div>
+                     <div className="space-y-4">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 rounded-lg border p-4">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                    <Skeleton className="h-5 w-5" />
+                                    <Skeleton className="h-5 w-20" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>

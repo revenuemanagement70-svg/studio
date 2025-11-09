@@ -13,6 +13,11 @@ import { useFirestore } from "@/firebase";
 import { addHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Image as ImageIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const allAmenities = [
+  "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
+];
 
 function ImagePreviews({ urls }: { urls: string[] }) {
     if (urls.length === 0) {
@@ -52,12 +57,20 @@ export default function AddPropertyPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
-  const [amenities, setAmenities] = useState("");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState("");
 
   const parsedUrls = useMemo(() => {
     return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
   }, [imageUrls]);
+
+  const handleAmenityChange = (amenity: string) => {
+    setSelectedAmenities(prev => 
+      prev.includes(amenity) 
+        ? prev.filter(a => a !== amenity)
+        : [...prev, amenity]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,7 +89,7 @@ export default function AddPropertyPage() {
       description,
       price: Number(price),
       rating: Number(rating),
-      amenities: amenities.split(',').map(a => a.trim()),
+      amenities: selectedAmenities,
       imageUrls: parsedUrls,
     };
 
@@ -130,7 +143,7 @@ export default function AddPropertyPage() {
                         <Label htmlFor="description">Description</Label>
                         <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="price">Price per night (₹)</Label>
                             <Input id="price" type="number" placeholder="e.g., 7500" value={price} onChange={e => setPrice(e.target.value)} required />
@@ -139,9 +152,20 @@ export default function AddPropertyPage() {
                             <Label htmlFor="rating">Rating (1-5)</Label>
                             <Input id="rating" type="number" step="0.1" min="1" max="5" placeholder="e.g., 4.8" value={rating} onChange={e => setRating(e.target.value)} required />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="amenities">Amenities (comma-separated)</Label>
-                            <Input id="amenities" placeholder="e.g., wifi, pool, gym" value={amenities} onChange={e => setAmenities(e.target.value)} required />
+                    </div>
+                     <div className="space-y-4">
+                        <Label>Amenities & Facilities</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 rounded-lg border p-4">
+                            {allAmenities.map((amenity) => (
+                                <div key={amenity} className="flex items-center gap-2">
+                                    <Checkbox 
+                                        id={`amenity-${amenity}`} 
+                                        checked={selectedAmenities.includes(amenity)}
+                                        onCheckedChange={() => handleAmenityChange(amenity)}
+                                    />
+                                    <Label htmlFor={`amenity-${amenity}`} className="capitalize font-normal cursor-pointer">{amenity}</Label>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
