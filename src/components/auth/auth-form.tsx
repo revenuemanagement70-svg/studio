@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { GoogleSignInButton } from './google-signin-button';
 import { Separator } from '../ui/separator';
+import { Loader2 } from 'lucide-react';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -53,7 +54,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
       router.push('/');
     } catch (err: any) {
-      setError(err.message);
+      const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';
+      setError(friendlyError.charAt(0).toUpperCase() + friendlyError.slice(1));
     } finally {
       setLoading(false);
     }
@@ -90,9 +92,10 @@ export function AuthForm({ mode }: AuthFormProps) {
               disabled={loading}
             />
           </div>
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Loading...' : buttonText}
+            {loading && <Loader2 className="animate-spin" />}
+            {loading ? 'Please wait...' : buttonText}
           </Button>
         </form>
         <div className="relative my-6">

@@ -1,10 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import { Star, Wifi, ParkingCircle, UtensilsCrossed, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { useFavorites } from '@/firebase/firestore/use-favorites';
 import { saveFavorite, removeFavorite } from '@/firebase/firestore/favorites';
@@ -41,7 +43,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const { favorites, loading: favoritesLoading } = useFavorites(user?.uid);
-  
+  const [isFavoriteProcessing, setIsFavoriteProcessing] = useState(false);
+
   const isFavorite = favorites?.some(fav => fav.name === hotel.name);
 
   const handleFavoriteToggle = async () => {
@@ -53,6 +56,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
       });
       return;
     }
+
+    setIsFavoriteProcessing(true);
 
     try {
       if (isFavorite) {
@@ -74,6 +79,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
         title: "Uh oh! Something went wrong.",
         description: error instanceof Error ? error.message : "Could not update favorites.",
       });
+    } finally {
+      setIsFavoriteProcessing(false);
     }
   };
 
@@ -124,7 +131,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
           size="icon" 
           className="absolute top-2 right-2 text-red-500 hover:text-red-600 hover:bg-red-100"
           onClick={handleFavoriteToggle}
-          disabled={favoritesLoading}
+          disabled={favoritesLoading || isFavoriteProcessing}
           aria-label={isFavorite ? 'Remove from favorites' : 'Save to favorites'}
         >
           <Heart className={cn("size-6", isFavorite && "fill-current")} />
