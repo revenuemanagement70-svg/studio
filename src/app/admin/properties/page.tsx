@@ -1,15 +1,91 @@
 'use client';
 
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle, Star } from "lucide-react";
+import { PlusCircle, Star, Trash2 } from "lucide-react";
 import { useHotels } from "@/firebase/firestore/use-hotels";
 import { HotelCardSkeleton } from "@/components/results/hotel-card-skeleton";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteHotel } from "@/firebase/firestore/hotels";
+import { useFirestore } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
+import type { hotel as Hotel } from "@/lib/types";
+
+function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDeleted: () => void }) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    if (!firestore || !hotel.id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete property.",
+      });
+      return;
+    }
+    try {
+      await deleteHotel(firestore, hotel.id);
+      toast({
+        title: "Property Deleted",
+        description: `${hotel.name} has been removed.`,
+      });
+      onDeleted();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description:
+          error instanceof Error ? error.message : "Could not delete property.",
+      });
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="sm"><Trash2 className="size-4" /></Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            property "{hotel.name}" and remove it from any user's favorites.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 
 export default function PropertiesPage() {
   const { hotels, loading, error } = useHotels();
+  const [deletedHotels, setDeletedHotels] = useState<string[]>([]);
+  
+  const handleHotelDeleted = (hotelId: string) => {
+    setDeletedHotels(prev => [...prev, hotelId]);
+  }
+  
+  const visibleHotels = hotels.filter(h => !deletedHotels.includes(h.id));
 
   return (
     <div>
@@ -40,10 +116,10 @@ export default function PropertiesPage() {
           )}
           {error && <p className="text-destructive text-center">{error}</p>}
           {!loading && !error && (
-            hotels.length > 0 ? (
+            visibleHotels.length > 0 ? (
               <div className="space-y-4">
-                {hotels.map((hotel) => (
-                  <Card key={hotel.name} className="flex items-center p-4 gap-4">
+                {visibleHotels.map((hotel) => (
+                  <Card key={hotel.id} className="flex items-center p-4 gap-4">
                     <div className="flex-grow">
                       <h3 className="font-bold font-headline">{hotel.name}</h3>
                       <p className="text-sm text-muted-foreground">{hotel.address}</p>
@@ -56,7 +132,7 @@ export default function PropertiesPage() {
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">Delete</Button>
+                      <DeleteConfirmationDialog hotel={hotel} onDeleted={() => handleHotelDeleted(hotel.id)} />
                     </div>
                   </Card>
                 ))}
