@@ -1,25 +1,14 @@
 "use client";
 
 import {
-  createContext,
   useContext,
-  useEffect,
-  useState,
-  useMemo,
 } from 'react';
 import type { FirebaseApp } from 'firebase/app';
-import type { Auth, User } from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { FirebaseContext } from './client-provider';
 
-// Look at using react-firebase-hooks for this
-// https://github.com/CSFrequency/react-firebase-hooks
-
-export const FirebaseContext = createContext<{
-  app: FirebaseApp | null;
-  auth: Auth | null;
-  firestore: Firestore | null;
-} | null>(null);
 
 export function useFirebase() {
   return useContext(FirebaseContext);

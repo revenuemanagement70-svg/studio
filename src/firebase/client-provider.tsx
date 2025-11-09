@@ -1,7 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useMemo } from 'react';
 import { initializeFirebase } from '.';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
+
+export const FirebaseContext = createContext<{
+  app: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
+} | null>(null);
 
 // `FirebaseContext` is being provided in the root layout, so we don't
 // need to provide it again here.
@@ -17,8 +26,3 @@ export function FirebaseClientProvider({
     </FirebaseContext.Provider>
   );
 }
-export const FirebaseContext = createContext<{
-  app: ReturnType<typeof initializeFirebase>['app'];
-  auth: ReturnType<typeof initializeFirebase>['auth'];
-  firestore: ReturnType<typeof initializeFirebase>['firestore'];
-} | null>(null);
