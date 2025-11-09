@@ -2,10 +2,12 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Star, Map, Tags, Phone } from 'lucide-react';
+import { Menu, X, Home, Star, Map, Tags, Phone, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/firebase';
+import { getAuth, signOut } from 'firebase/auth';
 
 const navLinks = [
   { href: '#home', label: 'Home', icon: <Home /> },
@@ -18,6 +20,13 @@ const navLinks = [
 export function Header() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { user, loading } = useUser();
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+    setMobileMenuOpen(false);
+  };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -61,8 +70,21 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden lg:flex items-center gap-2">
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">Login</Button>
-            <Button className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">Sign Up</Button>
+            {loading ? null : user ? (
+              <Button onClick={handleLogout} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
+                <LogOut className="size-4 mr-2" />
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -94,8 +116,21 @@ export function Header() {
                         </ul>
                     </nav>
                     <div className="mt-auto border-t pt-6 flex flex-col gap-4">
-                        <Button variant="outline" className="w-full border-primary text-primary rounded-md">Login</Button>
-                        <Button className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">Sign Up</Button>
+                      {loading ? null : user ? (
+                        <Button onClick={handleLogout} variant="outline" className="w-full border-primary text-primary rounded-md">
+                          <LogOut className="size-4 mr-2" />
+                          Logout
+                        </Button>
+                      ) : (
+                        <>
+                          <Button asChild variant="outline" className="w-full border-primary text-primary rounded-md">
+                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                          </Button>
+                          <Button asChild className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                            <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+                          </Button>
+                        </>
+                      )}
                         <a href="tel:+919899308683" className="text-center font-bold text-primary hover:underline mt-2">Call +91-98993-08683</a>
                     </div>
                 </div>
