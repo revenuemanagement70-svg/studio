@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,10 +13,36 @@ import { useFirestore } from "@/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { updateHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Image as ImageIcon } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function ImagePreviews({ urls }: { urls: string[] }) {
+    if (urls.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground py-8 border-dashed border-2 rounded-lg">
+                <ImageIcon className="mx-auto size-8 mb-2" />
+                <p>Image previews will appear here.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {urls.map((url, index) => (
+                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                    <Image
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
 
 function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const firestore = useFirestore();
@@ -31,6 +58,10 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [rating, setRating] = useState("");
   const [amenities, setAmenities] = useState("");
   const [imageUrls, setImageUrls] = useState("");
+
+  const parsedUrls = useMemo(() => {
+    return imageUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0 && (url.startsWith('http') || url.startsWith('https')));
+  }, [imageUrls]);
 
   useEffect(() => {
     if (!firestore || !hotelId) return;
@@ -49,7 +80,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setPrice(String(hotelData.price));
           setRating(String(hotelData.rating));
           setAmenities(hotelData.amenities.join(', '));
-          setImageUrls(hotelData.imageUrls.join('\n'));
+          setImageUrls((hotelData.imageUrls || []).join('\n'));
         } else {
           toast({
             variant: "destructive",
@@ -90,14 +121,14 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       price: Number(price),
       rating: Number(rating),
       amenities: amenities.split(',').map(a => a.trim()),
-      imageUrls: imageUrls.split('\n').map(url => url.trim()).filter(url => url),
+      imageUrls: parsedUrls,
     };
     
     if (hotelData.imageUrls?.length === 0) {
         toast({
             variant: "destructive",
             title: "Validation Error",
-            description: "Please provide at least one image URL.",
+            description: "Please provide at least one valid image URL.",
         });
         return;
     }
@@ -125,88 +156,114 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   }
 
   return (
-      <Card>
-        <CardContent className="pt-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-                <div className="space-y-2">
-                    <Label htmlFor="name">Property Name</Label>
-                    <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
+      <form className="space-y-8" onSubmit={handleSubmit}>
+        <Card>
+            <CardContent className="pt-6">
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Property Name</Label>
+                        <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur, Rajasthan" value={address} onChange={e => setAddress(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="price">Price per night (₹)</Label>
+                            <Input id="price" type="number" placeholder="e.g., 7500" value={price} onChange={e => setPrice(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="rating">Rating (1-5)</Label>
+                            <Input id="rating" type="number" step="0.1" min="1" max="5" placeholder="e.g., 4.8" value={rating} onChange={e => setRating(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="amenities">Amenities (comma-separated)</Label>
+                            <Input id="amenities" placeholder="e.g., wifi, pool, gym" value={amenities} onChange={e => setAmenities(e.target.value)} required />
+                        </div>
+                    </div>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur, Rajasthan" value={address} onChange={e => setAddress(e.target.value)} required />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="A short description of the property." value={description} onChange={e => setDescription(e.target.value)} required />
-                </div>
+            </CardContent>
+        </Card>
+        
+        <Card>
+            <CardContent className="pt-6 space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="imageUrls">Image URLs (one per line)</Label>
-                    <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4}/>
+                    <Textarea id="imageUrls" placeholder="https://example.com/image1.jpg&#x000A;https://example.com/image2.jpg" value={imageUrls} onChange={e => setImageUrls(e.target.value)} required rows={4} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="price">Price per night (₹)</Label>
-                        <Input id="price" type="number" placeholder="e.g., 7500" value={price} onChange={e => setPrice(e.target.value)} required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="rating">Rating (1-5)</Label>
-                        <Input id="rating" type="number" step="0.1" min="1" max="5" placeholder="e.g., 4.8" value={rating} onChange={e => setRating(e.target.value)} required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="amenities">Amenities (comma-separated)</Label>
-                        <Input id="amenities" placeholder="e.g., wifi, pool, gym" value={amenities} onChange={e => setAmenities(e.target.value)} required />
-                    </div>
+                <div className="space-y-2">
+                    <Label>Image Previews</Label>
+                    <ImagePreviews urls={parsedUrls} />
                 </div>
-                <div className="flex justify-end gap-4">
-                    <Button variant="outline" asChild type="button">
-                        <Link href="/admin/properties">Cancel</Link>
-                    </Button>
-                    <Button type="submit" disabled={isPending}>
-                      {isPending && <Loader2 className="animate-spin" />}
-                      {isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                </div>
-            </form>
-        </CardContent>
-      </Card>
+            </CardContent>
+        </Card>
+
+        <div className="flex justify-end gap-4">
+            <Button variant="outline" asChild type="button">
+                <Link href="/admin/properties">Cancel</Link>
+            </Button>
+            <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="animate-spin" />}
+                {isPending ? "Saving..." : "Save Changes"}
+            </Button>
+        </div>
+    </form>
   )
 }
 
 function EditPropertyFormSkeleton() {
     return (
-        <Card>
-            <CardContent className="pt-6 space-y-6">
-                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-20 w-full" />
-                </div>
-                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-24 w-full" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="space-y-2">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-10 w-full" />
+        <div className="space-y-8">
+            <Card>
+                <CardContent className="pt-6 space-y-6">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardContent className="pt-6 space-y-6">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-24 w-full" />
+                    </div>
+                     <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {[...Array(5)].map((_, i) => (
+                                <Skeleton key={i} className="aspect-square rounded-lg" />
+                            ))}
                         </div>
-                    ))}
-                </div>
-                <div className="flex justify-end gap-4">
-                    <Skeleton className="h-10 w-24" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-            </CardContent>
-        </Card>
+                    </div>
+                </CardContent>
+            </Card>
+            <div className="flex justify-end gap-4">
+                <Skeleton className="h-10 w-24" />
+                <Skeleton className="h-10 w-32" />
+            </div>
+        </div>
     );
 }
 
