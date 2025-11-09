@@ -1,10 +1,7 @@
 'use server';
 
-import {
-  personalizedHotelRecommendations,
-  type PersonalizedHotelRecommendationsInput,
-  type PersonalizedHotelRecommendationsOutput,
-} from '@/ai/flows/personalized-hotel-recommendations';
+import { hotelData } from '@/app/lib/hotel-data';
+import type { PersonalizedHotelRecommendationsInput, PersonalizedHotelRecommendationsOutput } from '@/ai/flows/personalized-hotel-recommendations';
 
 export async function getHotelRecommendations(
   input: PersonalizedHotelRecommendationsInput
@@ -15,15 +12,18 @@ export async function getHotelRecommendations(
   }
   
   try {
-    const recommendations = await personalizedHotelRecommendations(input);
-    // The AI might return an empty list, which is a valid response.
-    if (!recommendations.hotelRecommendations) {
-        return { hotelRecommendations: [] };
-    }
-    return recommendations;
+    const destinationLower = input.destination.toLowerCase();
+    
+    const results = hotelData.filter(hotel => 
+        hotel.address.toLowerCase().includes(destinationLower)
+    );
+
+    // Simulate a network delay to make loading states visible
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    return { hotelRecommendations: results };
   } catch (error) {
     console.error('Error fetching hotel recommendations:', error);
-    // Re-throwing a more user-friendly error
-    throw new Error("Failed to get recommendations from AI. The AI model might be unavailable or the request timed out. Please try again later.");
+    throw new Error("Failed to get recommendations. Please try again later.");
   }
 }
