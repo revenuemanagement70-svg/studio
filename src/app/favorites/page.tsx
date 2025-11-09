@@ -6,7 +6,6 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { HotelCard } from '@/components/results/hotel-card';
 import { HotelCardSkeleton } from '@/components/results/hotel-card-skeleton';
-import { FirebaseProvider } from '@/firebase/provider';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
@@ -78,14 +77,12 @@ function FavoritesContent() {
 
 export default function FavoritesPage() {
     return (
-        <FirebaseProvider>
-            <div className="flex flex-col min-h-screen bg-secondary/30">
-                <Header />
-                <main className="flex-grow pt-24 pb-12">
-                    <FavoritesContent />
-                </main>
-                <Footer />
-            </div>
-        </FirebaseProvider>
+      <div className="flex flex-col min-h-screen bg-secondary/30">
+          <Header />
+          <main className="flex-grow pt-24 pb-12">
+              <FavoritesContent />
+          </main>
+          <Footer />
+      </div>
     );
 }

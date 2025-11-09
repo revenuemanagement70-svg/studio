@@ -11,7 +11,6 @@ import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { FirebaseProvider } from '@/firebase/provider';
 import React from 'react';
 
 type Hotel = PersonalizedHotelRecommendationsOutput['hotelRecommendations'][0];
@@ -139,16 +138,14 @@ function HotelDetailsContent() {
 
 export default function HotelDetailsPage() {
     return (
-      <FirebaseProvider>
-        <div className="flex flex-col min-h-screen bg-secondary/30">
-          <Header />
-          <main className="flex-grow pt-24 pb-12">
-            <Suspense fallback={<p>Loading...</p>}>
-              <HotelDetailsContent />
-            </Suspense>
-          </main>
-          <Footer />
-        </div>
-      </FirebaseProvider>
+      <div className="flex flex-col min-h-screen bg-secondary/30">
+        <Header />
+        <main className="flex-grow pt-24 pb-12">
+          <Suspense fallback={<p>Loading...</p>}>
+            <HotelDetailsContent />
+          </Suspense>
+        </main>
+        <Footer />
+      </div>
     );
 }

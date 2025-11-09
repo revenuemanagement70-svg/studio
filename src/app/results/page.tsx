@@ -6,7 +6,6 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ResultsContent } from '@/components/results/results-content';
 import { HotelCardSkeleton } from '@/components/results/hotel-card-skeleton';
-import { FirebaseProvider } from '@/firebase/provider';
 
 function ResultsPage() {
   const searchParams = useSearchParams();
@@ -38,11 +37,9 @@ function ResultsPage() {
 // A wrapper component to allow `useSearchParams` to be used within a Suspense boundary.
 export default function ResultsPageWithSuspense() {
     return (
-      <FirebaseProvider>
         <Suspense fallback={<LoadingState />}>
             <ResultsPage />
         </Suspense>
-      </FirebaseProvider>
     )
 }
 
