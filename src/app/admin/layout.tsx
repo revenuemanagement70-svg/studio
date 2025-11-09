@@ -14,17 +14,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Home, Hotel, PlusCircle, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 function AdminSidebar() {
-  const pathname = usePathname();
-
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: Home },
-    { href: '/admin/properties', label: 'Properties', icon: Hotel },
-    { href: '/admin/properties/add', label: 'Add Property', icon: PlusCircle },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
+    { href: '/admin', label: 'Dashboard', icon: <Home /> },
+    { href: '/admin/properties', label: 'Properties', icon: <Hotel /> },
+    { href: '/admin/properties/add', label: 'Add Property', icon: <PlusCircle /> },
+    { href: '/admin/settings', label: 'Settings', icon: <Settings /> },
   ];
 
   return (
@@ -43,7 +40,6 @@ function AdminSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
                 tooltip={{ children: item.label }}
               >
                 <Link href={item.href}>
