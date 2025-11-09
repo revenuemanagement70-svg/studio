@@ -105,6 +105,74 @@
         }
       },
       "required": ["hotelId"]
+    },
+    "booking": {
+      "title": "Booking",
+      "description": "A record of a hotel booking made by a user.",
+      "type": "object",
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "description": "The unique 7-character ID for the booking, starting with 'Sty'."
+        },
+        "hotelId": {
+          "type": "string",
+          "description": "The ID of the booked hotel."
+        },
+        "hotelName": {
+          "type": "string",
+          "description": "The name of the booked hotel."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who made the booking."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The name of the user who made the booking."
+        },
+        "userEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the user who made the booking."
+        },
+        "checkin": {
+          "type": "string",
+          "format": "date",
+          "description": "The check-in date."
+        },
+        "checkout": {
+          "type": "string",
+          "format": "date",
+          "description": "The check-out date."
+        },
+        "guests": {
+          "type": "number",
+          "description": "The number of guests."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "The total price of the booking."
+        },
+        "bookedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the booking was made."
+        }
+      },
+      "required": [
+        "bookingId",
+        "hotelId",
+        "hotelName",
+        "userId",
+        "userName",
+        "userEmail",
+        "checkin",
+        "checkout",
+        "guests",
+        "totalPrice",
+        "bookedAt"
+      ]
     }
   },
   "auth": {
@@ -122,6 +190,12 @@
         "$ref": "#/entities/favoriteHotel"
       },
       "description": "A user's list of favorite hotel references."
+    },
+    "/bookings/{bookingId}": {
+      "schema": {
+        "$ref": "#/entities/booking"
+      },
+      "description": "A collection of all bookings made on the platform."
     }
   }
 }

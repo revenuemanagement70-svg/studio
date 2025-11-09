@@ -1,10 +1,10 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail } from 'lucide-react';
+import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail, Calendar, Users, Loader2 } from 'lucide-react';
 import type { hotel as Hotel } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
@@ -16,6 +16,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { createBooking } from '@/firebase/firestore/bookings';
+import { format, differenceInDays } from 'date-fns';
 import {
   Carousel,
   CarouselContent,
@@ -43,18 +46,61 @@ function getAmenityIcon(amenity: string): React.ReactNode {
     return null;
 }
 
-function BookingDialog({ hotelName }: { hotelName: string }) {
+function BookingDialog({ hotel, checkin, checkout, guests }: { hotel: Hotel; checkin?: string, checkout?: string, guests?: string }) {
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const [isPending, startTransition] = useTransition();
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setOpen(false);
-        toast({
-            title: "Booking Request Sent!",
-            description: `Your request to book ${hotelName} has been received.`,
+        if (!user || !firestore) {
+            toast({ variant: "destructive", title: "Please log in", description: "You need to be logged in to make a booking." });
+            return;
+        }
+
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get('name') as string;
+        const email = formData.get('email') as string;
+
+        const checkinDate = checkin ? new Date(checkin) : new Date();
+        const checkoutDate = checkout ? new Date(checkout) : new Date(new Date().setDate(new Date().getDate() + 1));
+        const numGuests = guests ? parseInt(guests, 10) : 1;
+        const nights = differenceInDays(checkoutDate, checkinDate) || 1;
+        const totalPrice = hotel.price * nights;
+
+        startTransition(async () => {
+            try {
+                const bookingId = await createBooking(firestore, {
+                    hotelId: hotel.id,
+                    hotelName: hotel.name,
+                    userId: user.uid,
+                    userName: name,
+                    userEmail: email,
+                    checkin: format(checkinDate, 'yyyy-MM-dd'),
+                    checkout: format(checkoutDate, 'yyyy-MM-dd'),
+                    guests: numGuests,
+                    totalPrice: totalPrice
+                });
+
+                toast({
+                    title: "Booking Successful!",
+                    description: `Your booking at ${hotel.name} is confirmed. Booking ID: ${bookingId}`,
+                });
+                setOpen(false);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Booking Failed",
+                    description: error instanceof Error ? error.message : "An unknown error occurred.",
+                });
+            }
         });
     };
+    
+    const nights = (checkin && checkout) ? (differenceInDays(new Date(checkout), new Date(checkin)) || 1) : 1;
+    const totalPrice = hotel.price * nights;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -63,30 +109,53 @@ function BookingDialog({ hotelName }: { hotelName: string }) {
                     Book Now
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[480px]">
                 <DialogHeader>
-                    <DialogTitle>Book: {hotelName}</DialogTitle>
+                    <DialogTitle>Confirm Booking: {hotel.name}</DialogTitle>
                     <DialogDescription>
-                        Fill in your details below to send a booking request. This is a demo and will not create a real booking.
+                        Review your details and confirm your booking.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">
-                                <User className="inline-block mr-1 size-4" /> Name
+                    <div className="space-y-4 py-4">
+                        <Card className="bg-secondary/50">
+                            <CardContent className="p-4 space-y-3">
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="font-semibold flex items-center gap-2"><Calendar className="size-4" /> Check-in</span>
+                                    <span>{checkin ? format(new Date(checkin), 'PPP') : 'Not specified'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="font-semibold flex items-center gap-2"><Calendar className="size-4" /> Check-out</span>
+                                    <span>{checkout ? format(new Date(checkout), 'PPP') : 'Not specified'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="font-semibold flex items-center gap-2"><Users className="size-4" /> Guests</span>
+                                    <span>{guests || 1}</span>
+                                </div>
+                                <div className="flex justify-between items-center font-bold text-md pt-2 border-t">
+                                    <span>Total Price ({nights} night{nights > 1 ? 's' : ''})</span>
+                                    <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                         <div className="space-y-2">
+                            <Label htmlFor="name" className="text-left">
+                                <User className="inline-block mr-1 size-4" /> Your Name
                             </Label>
-                            <Input id="name" defaultValue="John Doe" className="col-span-3" required />
+                            <Input id="name" name="name" defaultValue={user?.displayName || ""} required />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="email" className="text-right">
-                               <Mail className="inline-block mr-1 size-4" /> Email
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-left">
+                               <Mail className="inline-block mr-1 size-4" /> Your Email
                             </Label>
-                            <Input id="email" type="email" defaultValue="john@example.com" className="col-span-3" required />
+                            <Input id="email" name="email" type="email" defaultValue={user?.email || ""} required />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Send Request</Button>
+                        <Button type="submit" disabled={isPending} className="w-full">
+                            {isPending && <Loader2 className="animate-spin" />}
+                            {isPending ? "Confirming..." : "Confirm & Book"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -192,6 +261,9 @@ function HotelDetailsContent() {
   const searchParams = useSearchParams();
   const hotelDataString = searchParams.get('data');
   const backLink = searchParams.get('back') || '/';
+  const checkin = searchParams.get('checkin');
+  const checkout = searchParams.get('checkout');
+  const guests = searchParams.get('guests');
 
   if (!hotelDataString) {
     return (
@@ -253,7 +325,12 @@ function HotelDetailsContent() {
                             <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
                             <span className="text-md text-muted-foreground"> / night</span>
                         </div>
-                        <BookingDialog hotelName={hotel.name} />
+                        <BookingDialog 
+                          hotel={hotel} 
+                          checkin={checkin || undefined} 
+                          checkout={checkout || undefined}
+                          guests={guests || undefined}
+                        />
                     </div>
                 </CardContent>
             </Card>

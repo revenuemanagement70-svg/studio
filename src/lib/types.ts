@@ -1,4 +1,5 @@
 
+
 export type hotel = {
     id: string;
     name: string;
@@ -13,4 +14,19 @@ export type hotel = {
     managerName?: string;
     contactEmail?: string;
     contactPhone?: string;
+};
+
+export type booking = {
+    id: string;
+    bookingId: string;
+    hotelId: string;
+    hotelName: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    checkin: string;
+    checkout: string;
+    guests: number;
+    totalPrice: number;
+    bookedAt: any;
 };
