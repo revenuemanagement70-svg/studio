@@ -14,6 +14,8 @@ export type hotel = {
     managerName?: string;
     contactEmail?: string;
     contactPhone?: string;
+    taxRate?: number;
+    commissionRate?: number;
 };
 
 export type booking = {

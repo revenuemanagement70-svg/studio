@@ -90,6 +90,14 @@
         "contactPhone": {
             "type": "string",
             "description": "The contact phone number for the hotel."
+        },
+        "taxRate": {
+            "type": "number",
+            "description": "The tax rate percentage for the hotel."
+        },
+        "commissionRate": {
+            "type": "number",
+            "description": "The commission rate percentage for the hotel."
         }
       },
       "required": ["id", "name", "address", "price", "rating", "description", "imageUrls", "latitude", "longitude"]

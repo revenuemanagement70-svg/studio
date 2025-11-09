@@ -13,7 +13,7 @@ import { useFirestore } from "@/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { updateHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Image as ImageIcon, MapPin, User, Mail, Phone } from "lucide-react";
+import { Loader2, ArrowLeft, Image as ImageIcon, MapPin, User, Mail, Phone, TrendingUp, Percent } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -68,6 +68,8 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [managerName, setManagerName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [taxRate, setTaxRate] = useState("");
+  const [commissionRate, setCommissionRate] = useState("");
 
 
   const parsedUrls = useMemo(() => {
@@ -97,6 +99,8 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setManagerName(hotelData.managerName || "");
           setContactEmail(hotelData.contactEmail || "");
           setContactPhone(hotelData.contactPhone || "");
+          setTaxRate(String(hotelData.taxRate || ""));
+          setCommissionRate(String(hotelData.commissionRate || ""));
         } else {
           toast({
             variant: "destructive",
@@ -151,6 +155,8 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       managerName,
       contactEmail,
       contactPhone,
+      taxRate: Number(taxRate) || 0,
+      commissionRate: Number(commissionRate) || 0,
     };
     
     if (hotelData.imageUrls?.length === 0) {
@@ -246,6 +252,22 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="contactEmail">Contact Email</Label>
                     <Input id="contactEmail" type="email" placeholder="e.g., contact@grandheritage.com" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+                </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><TrendingUp className="size-5"/> Financials</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="taxRate" className="flex items-center gap-1.5">Tax Rate <Percent className="size-3.5" /></Label>
+                    <Input id="taxRate" type="number" step="0.1" min="0" max="100" placeholder="e.g., 18" value={taxRate} onChange={e => setTaxRate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="commissionRate" className="flex items-center gap-1.5">Commission Rate <Percent className="size-3.5" /></Label>
+                    <Input id="commissionRate" type="number" step="0.1" min="0" max="100" placeholder="e.g., 10" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} />
                 </div>
             </div>
           </CardContent>
