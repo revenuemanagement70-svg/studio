@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle, Star, Trash2 } from "lucide-react";
+import { PlusCircle, Star, Trash2, Pencil } from "lucide-react";
 import { useHotels } from "@/firebase/firestore/use-hotels";
 import { HotelCardSkeleton } from "@/components/results/hotel-card-skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +57,7 @@ function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDelete
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm"><Trash2 className="size-4" /></Button>
+        <Button variant="destructive" size="icon" className="size-9"><Trash2 className="size-4" /></Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -131,7 +131,11 @@ export default function PropertiesPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Edit</Button>
+                       <Button asChild variant="outline" size="icon" className="size-9">
+                        <Link href={`/admin/properties/edit/${hotel.id}`}>
+                           <Pencil className="size-4" />
+                        </Link>
+                      </Button>
                       <DeleteConfirmationDialog hotel={hotel} onDeleted={() => handleHotelDeleted(hotel.id)} />
                     </div>
                   </Card>
