@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { HotelCard } from '@/components/results/hotel-card';
 import { HotelCardSkeleton } from '@/components/results/hotel-card-skeleton';
-import { getHotelRecommendations } from '@/app/lib/actions';
-import type { PersonalizedHotelRecommendationsOutput } from '@/app/lib/actions';
 import { Button } from '../ui/button';
+import { useHotels } from '@/firebase/firestore/use-hotels';
+import type { hotel as Hotel } from '@/lib/types';
 
 interface ResultsContentProps {
   destination: string;
@@ -19,40 +19,23 @@ interface ResultsContentProps {
 }
 
 export function ResultsContent({ destination, checkin, checkout, guests, budget, travelStyle }: ResultsContentProps) {
-  const [recommendations, setRecommendations] = useState<PersonalizedHotelRecommendationsOutput | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  const { hotels, loading, error } = useHotels();
+  const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
+
   useEffect(() => {
-    const fetchRecommendations = async () => {
+    if (!loading && hotels) {
       if (!destination) {
-        setError('Please provide a destination to search.');
-        setLoading(false);
+        setFilteredHotels(hotels);
         return;
       }
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await getHotelRecommendations({
-          destination,
-          checkInDate: checkin,
-          checkOutDate: checkout,
-          numberOfGuests: parseInt(guests, 10) || 1,
-          budget: budget,
-          travelStyle: travelStyle,
-        });
-        setRecommendations(result);
-      } catch (e) {
-        console.error(e);
-        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-        setError(`Sorry, we couldn't fetch recommendations. ${errorMessage}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchRecommendations();
-  }, [destination, checkin, checkout, guests, budget, travelStyle]);
+      const destinationLower = destination.toLowerCase();
+      const results = hotels.filter(hotel => 
+        hotel.address.toLowerCase().includes(destinationLower) ||
+        hotel.name.toLowerCase().includes(destinationLower)
+      );
+      setFilteredHotels(results);
+    }
+  }, [loading, hotels, destination]);
 
   const getSubheading = () => {
     const parts = [];
@@ -60,8 +43,10 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
     if (guests) parts.push(`${guests} Guest(s)`);
     if (budget) parts.push(`Budget: ${budget}`);
     if (travelStyle) parts.push(`Style: ${travelStyle}`);
-    return parts.length > 0 ? parts.join(' • ') : 'Any dates • Any guests';
+    return parts.length > 0 ? parts.join(' • ') : 'Showing all properties';
   };
+  
+  const heading = destination ? `Results for "${destination}"` : "All Properties";
 
   return (
     <div className="container mx-auto px-5">
@@ -73,7 +58,7 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
       </Button>
       
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">Results for "{destination || '...'}"</h1>
+        <h1 className="text-3xl font-bold font-headline">{heading}</h1>
         <p className="text-muted-foreground capitalize">
           {getSubheading()}
         </p>
@@ -91,11 +76,11 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
         </div>
       )}
 
-      {!loading && !error && recommendations && (
+      {!loading && !error && (
         <div className="grid grid-cols-1 gap-4">
-          {recommendations.hotelRecommendations.length > 0 ? (
-             recommendations.hotelRecommendations.map((hotel, index) => (
-              <HotelCard key={hotel.name + index} hotel={hotel} source="results" />
+          {filteredHotels.length > 0 ? (
+             filteredHotels.map((hotel, index) => (
+              <HotelCard key={hotel.id || hotel.name + index} hotel={hotel} source="results" />
             ))
           ) : (
             <div className="text-center py-16 bg-white rounded-lg shadow">
