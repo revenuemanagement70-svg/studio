@@ -24,16 +24,17 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
 
   useEffect(() => {
     if (!loading && hotels) {
-      if (!destination) {
+      if (destination) {
+        const destinationLower = destination.toLowerCase();
+        // Basic text search on the address field
+        const results = hotels.filter(hotel => 
+          hotel.address.toLowerCase().includes(destinationLower)
+        );
+        setFilteredHotels(results);
+      } else {
+        // If no destination, show all hotels
         setFilteredHotels(hotels);
-        return;
       }
-      const destinationLower = destination.toLowerCase();
-      // Basic text search on the address field
-      const results = hotels.filter(hotel => 
-        hotel.address.toLowerCase().includes(destinationLower)
-      );
-      setFilteredHotels(results);
     }
   }, [loading, hotels, destination]);
 
