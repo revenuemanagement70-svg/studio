@@ -43,7 +43,7 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
     if (guests) parts.push(`${guests} Guest(s)`);
     if (budget) parts.push(`Budget: ${budget}`);
     if (travelStyle) parts.push(`Style: ${travelStyle}`);
-    return parts.length > 0 ? parts.join(' • ') : 'Showing all properties';
+    return parts.length > 0 ? parts.join(' • ') : 'Showing all available properties';
   };
   
   const heading = destination ? `Results for "${destination}"` : "All Properties";
