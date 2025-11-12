@@ -10,7 +10,8 @@ export async function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>) {
     const hotelsCollection = collection(db, 'hotels');
     
     try {
-        await addDoc(hotelsCollection, hotel);
+        const docRef = await addDoc(hotelsCollection, hotel);
+        return docRef;
     } catch (serverError) {
         const permissionError = new FirestorePermissionError({
             path: hotelsCollection.path,
