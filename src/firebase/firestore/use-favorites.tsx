@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { hotel as Hotel } from '@/lib/types';
-import { errorEmitter } from '../error-emitter';
-import { FirestorePermissionError } from '../errors';
+import { useCollection } from './use-collection';
 
 type FavoriteRef = {
   hotelId: string;
+  id: string; // The favorite doc's ID is the hotel ID
 };
 
 export function useFavorites(userId: string | undefined) {
@@ -16,28 +16,33 @@ export function useFavorites(userId: string | undefined) {
   const [favorites, setFavorites] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const favoritesCollection = useMemo(() => {
+  const favoritesCollectionRef = useMemo(() => {
     if (!firestore || !userId) return null;
     return collection(firestore, 'users', userId, 'favorites');
   }, [firestore, userId]);
-
+  
+  const { data: favoriteRefs, loading: favoriteRefsLoading } = useCollection<FavoriteRef>(favoritesCollectionRef);
 
   useEffect(() => {
-    if (!favoritesCollection || !firestore) {
+    if (favoriteRefsLoading) {
+      setLoading(true);
+      return;
+    }
+    
+    if (!firestore || !favoriteRefs) {
+      setFavorites([]);
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onSnapshot(
-      favoritesCollection,
-      async (snapshot) => {
-        const favoriteRefs = snapshot.docs.map(doc => doc.data() as FavoriteRef);
-        
+    const fetchFavoriteHotels = async () => {
+        setLoading(true);
         try {
           const favoriteHotels = await Promise.all(
             favoriteRefs.map(async (fav) => {
               if (!firestore) return null;
-              const hotelDocRef = doc(firestore, 'hotels', fav.hotelId);
+              // The document ID of the favorite is the hotelId
+              const hotelDocRef = doc(firestore, 'hotels', fav.id);
               const hotelDoc = await getDoc(hotelDocRef);
               if (hotelDoc.exists()) {
                 return { id: hotelDoc.id, ...hotelDoc.data() } as Hotel;
@@ -52,20 +57,11 @@ export function useFavorites(userId: string | undefined) {
         } finally {
             setLoading(false);
         }
-      },
-      (error) => {
-        console.error("Error fetching favorite references:", error);
-        const permissionError = new FirestorePermissionError({
-          path: favoritesCollection.path,
-          operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        setLoading(false);
-      }
-    );
+    };
+    
+    fetchFavoriteHotels();
 
-    return () => unsubscribe();
-  }, [favoritesCollection, firestore]);
+  }, [favoriteRefs, favoriteRefsLoading, firestore]);
 
   return { favorites, loading };
 }

@@ -1,49 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, getDoc, doc, Firestore } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { collection, query, orderBy, getDoc, doc, Firestore } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { booking } from '@/lib/types';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
+import { useCollection } from './use-collection';
 
 export function useBookings() {
   const firestore = useFirestore();
-  const [bookings, setBookings] = useState<booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!firestore) {
-      setLoading(false);
-      setError("Firestore is not available.");
-      return;
-    }
-
+  const bookingsQuery = useMemo(() => {
+    if (!firestore) return null;
     const bookingsCollection = collection(firestore, 'bookings');
-    const q = query(bookingsCollection, orderBy('bookedAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(
-        q, 
-        (snapshot) => {
-            const bookingList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as booking));
-            setBookings(bookingList);
-            setLoading(false);
-        },
-        (err) => {
-            console.error("Error fetching bookings:", err);
-            setError("Failed to fetch bookings. Check permissions or network.");
-            const permissionError = new FirestorePermissionError({
-              path: bookingsCollection.path,
-              operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            setLoading(false);
-        }
-    );
-
-    return () => unsubscribe();
+    return query(bookingsCollection, orderBy('bookedAt', 'desc'));
   }, [firestore]);
+
+  const { data: bookings, loading, error } = useCollection<booking>(bookingsQuery);
 
   return { bookings, loading, error };
 }
