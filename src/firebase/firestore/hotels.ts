@@ -9,15 +9,17 @@ import { FirestorePermissionError } from '@/firebase/errors';
 export async function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>) {
     const hotelsCollection = collection(db, 'hotels');
     
-    addDoc(hotelsCollection, hotel)
-    .catch((serverError) => {
+    try {
+        await addDoc(hotelsCollection, hotel);
+    } catch (serverError) {
         const permissionError = new FirestorePermissionError({
             path: hotelsCollection.path,
             operation: 'create',
             requestResourceData: hotel,
         });
         errorEmitter.emit('permission-error', permissionError);
-    });
+        throw serverError; // Re-throw the error to be caught by the calling function
+    }
 }
 
 export async function updateHotel(db: Firestore, hotelId: string, hotelData: Partial<Hotel>) {
