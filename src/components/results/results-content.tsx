@@ -23,16 +23,22 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
 
   useEffect(() => {
-    if (!loading && hotels) {
-      if (destination) {
-        const destinationLower = destination.toLowerCase();
-        const results = hotels.filter(hotel => 
-          hotel.city.toLowerCase() === destinationLower
-        );
-        setFilteredHotels(results);
-      } else {
-        setFilteredHotels(hotels);
-      }
+    // This effect runs whenever the full list of hotels is loaded or the destination changes.
+    if (loading) {
+      // If hotels are still loading, do nothing and wait.
+      return;
+    }
+
+    if (destination) {
+      // If a destination is provided, filter the hotels.
+      const destinationLower = destination.toLowerCase();
+      const results = hotels.filter(hotel => 
+        hotel.city.toLowerCase() === destinationLower
+      );
+      setFilteredHotels(results);
+    } else {
+      // If NO destination is provided, show ALL hotels.
+      setFilteredHotels(hotels);
     }
   }, [loading, hotels, destination]);
 
