@@ -26,13 +26,11 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
     if (!loading && hotels) {
       if (destination) {
         const destinationLower = destination.toLowerCase();
-        // Basic text search on the address field
         const results = hotels.filter(hotel => 
-          hotel.address.toLowerCase().includes(destinationLower)
+          hotel.city.toLowerCase() === destinationLower
         );
         setFilteredHotels(results);
       } else {
-        // If no destination, show all hotels
         setFilteredHotels(hotels);
       }
     }

@@ -25,6 +25,8 @@ import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronsUpDown } from 'lucide-react';
+import { indianCities } from '@/lib/cities';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const searchTabs = [
   { id: 'hotels', label: 'Hotels', icon: <Building2 /> },
@@ -42,6 +44,8 @@ export function SearchSection() {
   const [budget, setBudget] = useState('');
   const [travelStyle, setTravelStyle] = useState('');
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,17 +84,41 @@ export function SearchSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
           <div className="lg:col-span-4">
             <Label htmlFor="destination" className="flex items-center gap-1.5 mb-2 text-sm font-semibold"><MapPin className="size-4" /> Destination</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-primary" />
-              <Input
-                id="destination"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="Where are you going?"
-                className="pl-10 h-14 text-base rounded-lg"
-                required
-              />
-            </div>
+             <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={cityPopoverOpen}
+                        className="w-full justify-between h-14 text-base rounded-lg text-muted-foreground font-normal"
+                    >
+                        {destination || "Select city..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                        <CommandInput placeholder="Search city..." />
+                        <CommandEmpty>No city found.</CommandEmpty>
+                        <CommandList>
+                            <CommandGroup>
+                                {indianCities.map((city) => (
+                                    <CommandItem
+                                        key={city}
+                                        value={city}
+                                        onSelect={(currentValue) => {
+                                            setDestination(currentValue === destination ? "" : currentValue)
+                                            setCityPopoverOpen(false)
+                                        }}
+                                    >
+                                        {city}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-6">

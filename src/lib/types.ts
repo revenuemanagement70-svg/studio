@@ -1,9 +1,11 @@
 
 
+
 export type hotel = {
     id: string;
     name: string;
-    address: string;
+    streetAddress: string;
+    city: string;
     price: number;
     rating: number;
     amenities: string[];

@@ -11,8 +11,11 @@ import Link from "next/link";
 import { useFirestore } from "@/firebase";
 import { addHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MapPin, User, Mail, Phone, TrendingUp, Percent } from "lucide-react";
+import { Loader2, MapPin, User, Mail, Phone, TrendingUp, Percent, ChevronsUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { indianCities } from "@/lib/cities";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
@@ -25,7 +28,8 @@ export default function AddPropertyPage() {
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [streetAddress, setStreetAddress] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [rating, setRating] = useState("");
@@ -37,6 +41,7 @@ export default function AddPropertyPage() {
   const [contactPhone, setContactPhone] = useState("");
   const [taxRate, setTaxRate] = useState("");
   const [commissionRate, setCommissionRate] = useState("");
+  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
 
   const handleAmenityChange = (amenity: string) => {
     setSelectedAmenities(prev => 
@@ -56,10 +61,19 @@ export default function AddPropertyPage() {
       });
       return;
     }
+     if (!city) {
+      toast({
+        variant: "destructive",
+        title: "Missing City",
+        description: "Please select a city for the property.",
+      });
+      return;
+    }
 
     const hotelData = {
       name,
-      address,
+      city,
+      streetAddress,
       description,
       price: Number(price),
       rating: Number(rating),
@@ -104,14 +118,53 @@ export default function AddPropertyPage() {
             <CardContent className="pt-6">
                 <h3 className="font-headline font-bold text-lg mb-4">Basic Information</h3>
                 <div className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">Property Name</Label>
+                        <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Property Name</Label>
-                            <Input id="name" placeholder="e.g., The Grand Heritage" value={name} onChange={e => setName(e.target.value)} required />
+                         <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                             <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={cityPopoverOpen}
+                                        className="w-full justify-between font-normal"
+                                    >
+                                        {city || "Select city..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search city..." />
+                                        <CommandEmpty>No city found.</CommandEmpty>
+                                        <CommandList>
+                                            <CommandGroup>
+                                                {indianCities.map((c) => (
+                                                    <CommandItem
+                                                        key={c}
+                                                        value={c}
+                                                        onSelect={(currentValue) => {
+                                                            setCity(currentValue === city ? "" : currentValue)
+                                                            setCityPopoverOpen(false)
+                                                        }}
+                                                    >
+                                                        {c}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input id="address" placeholder="e.g., 123 Palace Road, Jaipur" value={address} onChange={e => setAddress(e.target.value)} required />
+                            <Label htmlFor="streetAddress">Street Address</Label>
+                            <Input id="streetAddress" placeholder="e.g., 123 Palace Road" value={streetAddress} onChange={e => setStreetAddress(e.target.value)} required />
                         </div>
                     </div>
                     <div className="space-y-2">

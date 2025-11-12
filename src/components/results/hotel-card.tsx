@@ -116,7 +116,7 @@ export function HotelCard({ hotel, source = 'results' }: HotelCardProps) {
                 <span>{hotel.rating.toFixed(1)}</span>
             </div>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">{hotel.address}</p>
+        <p className="text-sm text-muted-foreground mb-4">{hotel.streetAddress}, {hotel.city}</p>
         <p className="text-sm text-foreground flex-grow mb-4">{hotel.description}</p>
         
         {hotel.amenities && hotel.amenities.length > 0 && (

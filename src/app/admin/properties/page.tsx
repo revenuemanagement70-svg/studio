@@ -122,7 +122,7 @@ export default function PropertiesPage() {
                   <Card key={hotel.id} className="flex items-center p-4 gap-4">
                     <div className="flex-grow">
                       <h3 className="font-bold font-headline">{hotel.name}</h3>
-                      <p className="text-sm text-muted-foreground">{hotel.address}</p>
+                      <p className="text-sm text-muted-foreground">{hotel.streetAddress}, {hotel.city}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline">₹{hotel.price}/night</Badge>
                         <Badge variant="secondary" className="flex items-center gap-1">

@@ -39,9 +39,13 @@
           "type": "string",
           "description": "The name of the hotel."
         },
-        "address": {
-          "type": "string",
-          "description": "The address of the hotel."
+        "streetAddress": {
+            "type": "string",
+            "description": "The street address of the hotel."
+        },
+        "city": {
+            "type": "string",
+            "description": "The city where the hotel is located."
         },
         "price": {
           "type": "number",
@@ -100,7 +104,7 @@
             "description": "The commission rate percentage for the hotel."
         }
       },
-      "required": ["id", "name", "address", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
+      "required": ["id", "name", "streetAddress", "city", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
     },
     "favoriteHotel": {
       "title": "Favorite Hotel Reference",

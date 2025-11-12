@@ -365,7 +365,7 @@ function HotelDetailsContent() {
                             <span>{hotel.rating.toFixed(1)}</span>
                         </div>
                     </div>
-                    <p className="text-md text-muted-foreground mb-6">{hotel.address}</p>
+                    <p className="text-md text-muted-foreground mb-6">{hotel.streetAddress}, {hotel.city}</p>
                     
                     <p className="text-foreground mb-6">{hotel.description}</p>
                     
