@@ -32,17 +32,15 @@ export async function createBooking(db: Firestore, bookingData: Omit<booking, 'i
 
         return bookingId;
     } catch (serverError) {
-        // If the error is a permission error, it's already handled by the error emitter in the transaction's functions.
-        // If it's a regular error (like rooms sold out), we create a new one to be shown.
-        if (!(serverError instanceof FirestorePermissionError)) {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: bookingRef.path,
-                operation: 'create',
-                requestResourceData: bookingData,
-            }));
-        }
+        // Create a detailed error for any failure within the transaction.
+        const permissionError = new FirestorePermissionError({
+            path: bookingRef.path,
+            operation: 'create',
+            requestResourceData: bookingData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
        
-        // Re-throw the error to be caught by the calling function's try-catch block
+        // Re-throw the original error to be caught by the calling function's UI logic
         throw serverError;
     }
 }
