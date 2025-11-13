@@ -2,12 +2,13 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Star, Map, Tags, Phone, LogOut, Heart } from 'lucide-react';
+import { Menu, X, Home, Star, Map, Tags, Phone, LogOut, Heart, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { getAuth, signOut } from 'firebase/auth';
+import { Separator } from '../ui/separator';
 
 const navLinks = [
   { href: '#home', label: 'Home', icon: <Home /> },
@@ -78,6 +79,13 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <div className="hidden lg:flex items-center gap-2">
+             <Button asChild variant="ghost" size="sm">
+                <Link href="/admin">
+                    <Building className="size-4 mr-2" />
+                    List your property
+                </Link>
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
             {loading ? null : user ? (
               <Button onClick={handleLogout} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
                 <LogOut className="size-4 mr-2" />
@@ -132,6 +140,12 @@ export function Header() {
                                 </Link>
                             </li>
                         )}
+                        <li>
+                            <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
+                                <Building className="size-5" />
+                                List your property
+                            </Link>
+                        </li>
                         </ul>
                     </nav>
                     <div className="mt-auto border-t pt-6 flex flex-col gap-4">
