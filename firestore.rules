@@ -25,11 +25,11 @@ service cloud.firestore {
                data.latitude is number &&
                data.longitude is number &&
                data.amenities is list &&
-               data.managerName is string &&
-               data.contactEmail is string &&
-               data.contactPhone is string &&
-               data.taxRate is number &&
-               data.commissionRate is number;
+               (!('managerName' in data) || data.managerName is string) &&
+               (!('contactEmail' in data) || data.contactEmail is string) &&
+               (!('contactPhone' in data) || data.contactPhone is string) &&
+               (!('taxRate' in data) || data.taxRate is number) &&
+               (!('commissionRate' in data) || data.commissionRate is number);
     }
 
     // HOTELS
