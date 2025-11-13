@@ -58,7 +58,7 @@ export function useFavorites(userId: string | undefined) {
             })
           );
           
-          setFavorites(favoriteHotels.filter((h): h is Hotel => h !== null));
+          setFavorites(favoriteHotels.filter((h): h is Hotel => h !== null && !h.deleted));
           setError(null);
         } catch (err) {
            console.error("Error fetching favorite hotel details:", err);

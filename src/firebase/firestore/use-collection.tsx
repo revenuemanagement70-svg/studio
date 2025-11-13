@@ -15,7 +15,7 @@ export function useCollection<T>(ref: CollectionReference | Query | null) {
     if (!ref) {
       setData([]);
       setLoading(false);
-      return;
+      return () => {};
     }
 
     setLoading(true);
@@ -42,8 +42,7 @@ export function useCollection<T>(ref: CollectionReference | Query | null) {
     );
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref?.path]);
+  }, [ref]);
 
   return { data, loading, error };
 }

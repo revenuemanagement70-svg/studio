@@ -13,8 +13,7 @@ export function useBookings() {
 
   const bookingsQuery = useMemo(() => {
     if (!firestore) return null;
-    const bookingsCollection = collection(firestore, 'bookings');
-    return query(bookingsCollection, orderBy('bookedAt', 'desc'));
+    return query(collection(firestore, 'bookings'), orderBy('bookedAt', 'desc'));
   }, [firestore]);
 
   const { data: bookings, loading, error } = useCollection<booking>(bookingsQuery);
