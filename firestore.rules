@@ -3,33 +3,60 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Use a custom claim "admin" set on the user account
-    function isAdmin() {
-      return request.auth != null
-             && request.auth.token.admin == true;
+    // Helper: Check if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    match /hotels/{hotelId} {
-      allow read: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin();
+    // Helper: Check if user is the admin (your UID)
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.admin == true;
+    }
 
+    // ------------------------------------------
+    // HOTELS (Admin writes, public reads)
+    // ------------------------------------------
+    match /hotels/{hotelId} {
+
+      // Public can read hotels
+      allow read: if true;
+
+      // TEMPORARY: allow any signed-in user
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+
+      // Availability sub-collection
       match /availability/{availabilityId} {
         allow read: if true;
-        allow write: if isAdmin();
+        allow write: if isSignedIn();
       }
     }
 
+    // ------------------------------------------
+    // USERS (Only user can access their own data)
+    // ------------------------------------------
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null
+                          && request.auth.uid == userId;
+
       match /favorites/{favoriteId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if request.auth != null
+                            && request.auth.uid == userId;
       }
     }
 
+    // ------------------------------------------
+    // BOOKINGS
+    // ------------------------------------------
     match /bookings/{bookingId} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null;
+      allow read: if isSignedIn() 
+                   && resource.data.userId == request.auth.uid;
+
+      // Any signed-in user can create a booking
+      allow create: if isSignedIn();
+
+      // Users cannot update/delete bookings
       allow update, delete: if false;
     }
   }
