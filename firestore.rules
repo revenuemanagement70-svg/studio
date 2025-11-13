@@ -13,32 +13,38 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    function isHotelDataValid() {
-        let data = request.resource.data;
-        return data.name is string && data.name.size() > 0 &&
-               data.streetAddress is string && data.streetAddress.size() > 0 &&
-               data.city is string && data.city.size() > 0 &&
-               data.price is number && data.price >= 0 &&
-               data.rating is number && data.rating >= 0 && data.rating <= 5 &&
-               data.description is string && data.description.size() > 0 &&
-               data.imageUrls is list && data.imageUrls.size() > 0 &&
-               data.latitude is number &&
-               data.longitude is number &&
-               data.amenities is list &&
-               // Optional fields: check type only if they exist
-               (!('managerName' in data) || data.managerName is string) &&
-               (!('contactEmail' in data) || data.contactEmail is string) &&
-               (!('contactPhone' in data) || data.contactPhone is string) &&
-               (!('taxRate' in data) || data.taxRate is number) &&
-               (!('commissionRate' in data) || data.commissionRate is number);
+    function isHotelDataValid(data) {
+      return 
+        data.name is string && data.name.size() > 0 &&
+        data.streetAddress is string && data.streetAddress.size() > 0 &&
+        data.city is string && data.city.size() > 0 &&
+        data.description is string && data.description.size() > 0 &&
+        data.price is number && data.price > 0 &&
+        data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+        data.latitude is number &&
+        data.longitude is number &&
+        data.amenities is list &&
+        data.imageUrls is list && data.imageUrls.size() > 0 &&
+        // Optional fields - check type only if they exist
+        (!('managerName' in data) || data.managerName is string) &&
+        (!('contactEmail' in data) || data.contactEmail is string) &&
+        (!('contactPhone' in data) || data.contactPhone is string) &&
+        (!('taxRate' in data) || data.taxRate is number) &&
+        (!('commissionRate' in data) || data.commissionRate is number);
+    }
+    
+    function isUpdatingOwnData(data) {
+        return !('userId' in data) || data.userId == request.auth.uid;
     }
 
     // HOTELS
-    // Allow anyone to read hotel listings and their availability.
-    // Only signed-in users (admins) can create, update, or delete hotels.
+    // Anyone can read hotel listings.
+    // Only signed-in users (admins) can create or update hotels.
     match /hotels/{hotelId} {
       allow read: if true;
-      allow write: if isSignedIn() && isHotelDataValid();
+      allow create: if isSignedIn() && isHotelDataValid(request.resource.data);
+      allow update: if isSignedIn() && isHotelDataValid(request.resource.data);
+      allow delete: if isSignedIn();
 
       match /availability/{availabilityId} {
         allow read: if true;
@@ -49,7 +55,7 @@ service cloud.firestore {
     // USER DATA
     // Users can only access their own data (favorites).
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read, write: if isOwner(userId) && isUpdatingOwnData(request.resource.data);
       
       match /favorites/{favoriteId} {
         allow read, write: if isOwner(userId);

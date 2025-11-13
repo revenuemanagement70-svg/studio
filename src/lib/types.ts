@@ -1,6 +1,7 @@
 
 
 
+
 export type hotel = {
     id: string;
     name: string;
@@ -18,6 +19,8 @@ export type hotel = {
     contactPhone?: string;
     taxRate?: number;
     commissionRate?: number;
+    deleted?: boolean;
+    deletedAt?: Date;
 };
 
 export type booking = {

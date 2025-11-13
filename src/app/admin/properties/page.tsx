@@ -27,6 +27,7 @@ import type { hotel as Hotel } from "@/lib/types";
 function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDeleted: () => void }) {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!firestore || !hotel.id) {
@@ -37,6 +38,7 @@ function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDelete
       });
       return;
     }
+    setIsDeleting(true);
     try {
       await deleteHotel(firestore, hotel.id);
       toast({
@@ -51,6 +53,8 @@ function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDelete
         description:
           error instanceof Error ? error.message : "Could not delete property.",
       });
+    } finally {
+        setIsDeleting(false);
     }
   };
 
@@ -63,13 +67,14 @@ function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDelete
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the
-            property "{hotel.name}" and remove it from any user's favorites.
+            This action will mark the property "{hotel.name}" as deleted and remove it from public view.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -79,13 +84,8 @@ function DeleteConfirmationDialog({ hotel, onDeleted }: { hotel: Hotel, onDelete
 
 export default function PropertiesPage() {
   const { hotels, loading, error } = useHotels();
-  const [deletedHotels, setDeletedHotels] = useState<string[]>([]);
-  
-  const handleHotelDeleted = (hotelId: string) => {
-    setDeletedHotels(prev => [...prev, hotelId]);
-  }
-  
-  const visibleHotels = hotels.filter(h => !deletedHotels.includes(h.id));
+  // We no longer need local state management for deleted hotels, 
+  // as the useHotels hook now handles it.
 
   return (
     <div>
@@ -116,9 +116,9 @@ export default function PropertiesPage() {
           )}
           {error && <p className="text-destructive text-center">{error}</p>}
           {!loading && !error && (
-            visibleHotels.length > 0 ? (
+            hotels.length > 0 ? (
               <div className="space-y-4">
-                {visibleHotels.map((hotel) => (
+                {hotels.map((hotel) => (
                   <Card key={hotel.id} className="flex items-center p-4 gap-4">
                     <div className="flex-grow">
                       <h3 className="font-bold font-headline">{hotel.name}</h3>
@@ -136,7 +136,9 @@ export default function PropertiesPage() {
                            <Pencil className="size-4" />
                         </Link>
                       </Button>
-                      <DeleteConfirmationDialog hotel={hotel} onDeleted={() => handleHotelDeleted(hotel.id)} />
+                      <DeleteConfirmationDialog hotel={hotel} onDeleted={() => {
+                        // The hook re-fetches, so we don't need to do anything here anymore
+                      }} />
                     </div>
                   </Card>
                 ))}
