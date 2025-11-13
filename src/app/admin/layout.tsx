@@ -17,7 +17,7 @@ import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarChe
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 
@@ -86,37 +86,53 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useUser();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [checking, setChecking] = React.useState(true);
-  
-  React.useEffect(() => {
-    if (loading) return;
+  const pathname = usePathname();
+  const [isVerified, setIsVerified] = React.useState(false);
 
+  React.useEffect(() => {
+    // If auth state is still loading, do nothing.
+    if (loading) return;
+    
+    // If the user is on the login page, we don't need to do any checks.
+    if (pathname === '/admin/login') {
+      setIsVerified(true);
+      return;
+    }
+
+    // If there's no user, redirect to login.
     if (!user) {
       router.replace('/admin/login');
       return;
     }
-
+    
+    // If there is a user, check for the admin claim.
     user.getIdTokenResult().then(idTokenResult => {
       const isAdminClaim = !!idTokenResult.claims.admin;
-      setIsAdmin(isAdminClaim);
-      setChecking(false);
-      if (!isAdminClaim) {
+      if (isAdminClaim) {
+        setIsVerified(true);
+      } else {
+        // If not an admin, redirect to login.
         router.replace('/admin/login');
       }
     });
 
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
-
-  if (loading || checking || !isAdmin) {
+  // While we're checking, show a loading spinner.
+  if (!isVerified) {
     return (
-        <div className="flex h-screen w-full items-center justify-center">
+        <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="animate-spin size-8 text-primary" />
         </div>
     );
   }
 
+  // If on the login page, just render children without the admin sidebar.
+  if (pathname === '/admin/login') {
+      return <>{children}</>;
+  }
+
+  // If verified and not on the login page, show the admin dashboard with sidebar.
   return (
     <SidebarProvider>
       <AdminSidebar />
