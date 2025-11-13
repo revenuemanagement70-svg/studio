@@ -51,7 +51,7 @@ export default function AddPropertyPage() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!firestore) {
       toast({
@@ -88,21 +88,24 @@ export default function AddPropertyPage() {
       commissionRate: Number(commissionRate) || 0,
     };
 
-    startTransition(async () => {
-      try {
-        await addHotel(firestore, hotelData);
-        toast({
-          title: "Property Added!",
-          description: `${name} has been successfully added to your inventory.`,
+    startTransition(() => {
+      addHotel(firestore, hotelData)
+        .then(() => {
+            toast({
+              title: "Property Added!",
+              description: `${name} has been successfully added to your inventory.`,
+            });
+            router.push("/admin/properties");
+        })
+        .catch((error) => {
+            // Error is already emitted by addHotel, so we just show a generic toast here.
+            // The FirebaseErrorListener will show the detailed error.
+            toast({
+              variant: "destructive",
+              title: "Uh oh! Something went wrong.",
+              description: "Could not add property. Check console for details.",
+            });
         });
-        router.push("/admin/properties");
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: error instanceof Error ? error.message : "Could not add property.",
-        });
-      }
     });
   };
 

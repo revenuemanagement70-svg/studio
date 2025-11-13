@@ -6,21 +6,22 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
-export async function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>) {
+export function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>): Promise<any> {
     const hotelsCollection = collection(db, 'hotels');
     
-    try {
-        const docRef = await addDoc(hotelsCollection, hotel);
-        return docRef;
-    } catch (serverError) {
-        const permissionError = new FirestorePermissionError({
-            path: hotelsCollection.path,
-            operation: 'create',
-            requestResourceData: hotel,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw serverError; // Re-throw the error to be caught by the calling function
-    }
+    return new Promise((resolve, reject) => {
+        addDoc(hotelsCollection, hotel)
+            .then(resolve)
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: hotelsCollection.path,
+                    operation: 'create',
+                    requestResourceData: hotel,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                reject(serverError); // Reject the promise to be caught by the UI
+            });
+    });
 }
 
 export async function updateHotel(db: Firestore, hotelId: string, hotelData: Partial<Hotel>) {
