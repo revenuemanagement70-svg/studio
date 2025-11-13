@@ -16,8 +16,7 @@ import {
 import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
 
@@ -84,59 +83,16 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useUser();
-  const router = useRouter();
   const pathname = usePathname();
-  const [isVerified, setIsVerified] = React.useState(false);
-
-  React.useEffect(() => {
-    // WORKAROUND: Bypass login for development.
-    setIsVerified(true);
-    return;
-
-    // // If auth state is still loading, do nothing.
-    // if (loading) return;
-    
-    // // If the user is on the login page, we don't need to do any checks.
-    // if (pathname === '/admin/login') {
-    //   setIsVerified(true);
-    //   return;
-    // }
-
-    // // If there's no user, redirect to login.
-    // if (!user) {
-    //   router.replace('/admin/login');
-    //   return;
-    // }
-    
-    // // If there is a user, check for the admin claim.
-    // user.getIdTokenResult().then(idTokenResult => {
-    //   const isAdminClaim = !!idTokenResult.claims.admin;
-    //   if (isAdminClaim) {
-    //     setIsVerified(true);
-    //   } else {
-    //     // If not an admin, redirect to login.
-    //     router.replace('/admin/login');
-    //   }
-    // });
-
-  }, [user, loading, router, pathname]);
-
-  // While we're checking, show a loading spinner.
-  if (!isVerified) {
-    return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <Loader2 className="animate-spin size-8 text-primary" />
-        </div>
-    );
-  }
 
   // If on the login page, just render children without the admin sidebar.
   if (pathname === '/admin/login') {
       return <>{children}</>;
   }
 
-  // If verified and not on the login page, show the admin dashboard with sidebar.
+  // WORKAROUND: Login is bypassed for development.
+  // The original authentication logic has been removed.
+  // To re-enable it, please ask me to "secure the admin dashboard".
   return (
     <SidebarProvider>
       <AdminSidebar />
