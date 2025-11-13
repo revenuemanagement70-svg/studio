@@ -4,61 +4,63 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Helper: Check if user is signed in
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    // Corrected validation for creating a hotel. It does not check for an 'id'.
-    function isNewHotelDataValid(data) {
-        return data.name is string && data.name.size() > 0
-            && data.city is string && data.city.size() > 0
-            && data.price is number && data.price > 0
-            && data.rating is number && data.rating >= 1 && data.rating <= 5
-            && data.description is string && data.description.size() > 0;
+    // Helper: Check if user is the admin (your UID)
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.uid == "YOUR_ADMIN_UID_HERE";
     }
 
-    // HOTELS
+    // ------------------------------------------
+    // HOTELS (Admin writes, public reads)
+    // ------------------------------------------
     match /hotels/{hotelId} {
-      // Anyone can read hotel listings.
+
+      // Public can read hotels
       allow read: if true;
-      
-      // Only signed-in users who provide valid data can create a hotel.
-      allow create: if isSignedIn() && isNewHotelDataValid(request.resource.data);
 
-      // Only signed-in users can update or delete hotels.
-      // Update/delete can have simpler rules as the document already exists.
-      allow update, delete: if isSignedIn();
+      // ONLY admin can create a property
+      allow create: if isAdmin();
 
-      // AVAILABILITY sub-collection
-      // Can be read by anyone, but only written by signed-in users.
+      // ONLY admin can edit or delete
+      allow update, delete: if isAdmin();
+
+      // Availability sub-collection
       match /availability/{availabilityId} {
         allow read: if true;
-        allow write: if isSignedIn();
+        allow write: if isAdmin();
       }
     }
 
-    // USER DATA
-    // Users can only access their own data (favorites).
+    // ------------------------------------------
+    // USERS (Only user can access their own data)
+    // ------------------------------------------
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
-      
+      allow read, write: if request.auth != null
+                          && request.auth.uid == userId;
+
       match /favorites/{favoriteId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if request.auth != null
+                            && request.auth.uid == userId;
       }
     }
 
+    // ------------------------------------------
     // BOOKINGS
-    // Only the user who created the booking can read it.
-    // Signed-in users can create bookings (further validation is in the transaction).
+    // ------------------------------------------
     match /bookings/{bookingId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() 
+                   && resource.data.userId == request.auth.uid;
+
+      // Any signed-in user can create a booking
       allow create: if isSignedIn();
-      allow update, delete: if false; // Bookings are immutable by users.
+
+      // Users cannot update/delete bookings
+      allow update, delete: if false;
     }
   }
 }
