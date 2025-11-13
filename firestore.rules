@@ -16,13 +16,20 @@ service cloud.firestore {
     function isHotelDataValid() {
         let data = request.resource.data;
         return data.name is string &&
-               data.address is string &&
+               data.streetAddress is string &&
+               data.city is string &&
                data.price is number &&
                data.rating is number &&
                data.description is string &&
                data.imageUrls is list &&
                data.latitude is number &&
-               data.longitude is number;
+               data.longitude is number &&
+               data.amenities is list &&
+               data.managerName is string &&
+               data.contactEmail is string &&
+               data.contactPhone is string &&
+               data.taxRate is number &&
+               data.commissionRate is number;
     }
 
     // HOTELS
