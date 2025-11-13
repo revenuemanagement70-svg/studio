@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -19,9 +20,10 @@ import { Loader2 } from 'lucide-react';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
+  isAdminLogin?: boolean;
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, isAdminLogin = false }: AuthFormProps) {
   const auth = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -30,8 +32,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [anonymousLoading, setAnonymousLoading] = useState(false);
 
-  const title = mode === 'login' ? 'Welcome Back!' : 'Create an Account';
-  const description = mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.';
+  const title = isAdminLogin ? 'Admin Sign In' : (mode === 'login' ? 'Welcome Back!' : 'Create an Account');
+  const description = isAdminLogin ? 'Enter your credentials to access the dashboard.' : (mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.');
   const buttonText = mode === 'login' ? 'Log In' : 'Sign Up';
   const alternativeText = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
   const alternativeLink = mode === 'login' ? '/signup' : '/login';
@@ -60,7 +62,12 @@ export function AuthForm({ mode }: AuthFormProps) {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/');
+
+      if (isAdminLogin) {
+          router.push('/admin');
+      } else {
+        router.push('/');
+      }
     } catch (err: any) {
       const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';
       setError(friendlyError.charAt(0).toUpperCase() + friendlyError.slice(1));
@@ -128,30 +135,36 @@ export function AuthForm({ mode }: AuthFormProps) {
           </Button>
         </form>
 
-        <div className="relative my-6">
-          <Separator />
-          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">OR</span>
-        </div>
+        {!isAdminLogin && (
+          <>
+            <div className="relative my-6">
+              <Separator />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">OR</span>
+            </div>
 
-        <div className='flex flex-col gap-4'>
-            <GoogleSignInButton setLoading={setLoading} setError={setError} />
+            <div className='flex flex-col gap-4'>
+                <GoogleSignInButton setLoading={setLoading} setError={setError} />
 
-            {mode === 'login' && (
-                 <Button onClick={handleAnonymousSignIn} variant="secondary" className="w-full" disabled={loading || anonymousLoading}>
-                    {anonymousLoading && <Loader2 className="animate-spin" />}
-                    {anonymousLoading ? 'Signing in...' : 'Log In as Anonymous User'}
-                </Button>
-            )}
-        </div>
+                {mode === 'login' && (
+                    <Button onClick={handleAnonymousSignIn} variant="secondary" className="w-full" disabled={loading || anonymousLoading}>
+                        {anonymousLoading && <Loader2 className="animate-spin" />}
+                        {anonymousLoading ? 'Signing in...' : 'Log In as Anonymous User'}
+                    </Button>
+                )}
+            </div>
+          </>
+        )}
       </CardContent>
-      <CardFooter className="justify-center">
-        <p className="text-sm text-muted-foreground">
-          {alternativeText}{' '}
-          <Link href={alternativeLink} className="font-semibold text-primary hover:underline">
-            {alternativeLinkText}
-          </Link>
-        </p>
-      </CardFooter>
+      {!isAdminLogin && (
+        <CardFooter className="justify-center">
+          <p className="text-sm text-muted-foreground">
+            {alternativeText}{' '}
+            <Link href={alternativeLink} className="font-semibold text-primary hover:underline">
+              {alternativeLinkText}
+            </Link>
+          </p>
+        </CardFooter>
+      )}
     </Card>
   );
 }

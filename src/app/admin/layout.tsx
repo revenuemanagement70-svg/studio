@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,6 +16,10 @@ import {
 import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { getAuth, signOut } from 'firebase/auth';
+import { Loader2 } from 'lucide-react';
 
 function AdminSidebar() {
   const navItems = [
@@ -25,6 +30,11 @@ function AdminSidebar() {
     { href: '/admin/finance', label: 'Finance', icon: <TrendingUp /> },
     { href: '/admin/settings', label: 'Settings', icon: <Settings /> },
   ];
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    await signOut(auth);
+  };
 
   return (
     <Sidebar>
@@ -54,11 +64,15 @@ function AdminSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <Button asChild variant="ghost">
+        <Button asChild variant="ghost" className="w-full justify-start">
             <Link href="/">
                 <LogOut className="size-5" />
                 <span>Back to Site</span>
             </Link>
+        </Button>
+         <Button onClick={handleLogout} variant="ghost" className="w-full justify-start">
+             <LogOut className="size-5" />
+             <span>Sign Out</span>
         </Button>
       </SidebarFooter>
     </Sidebar>
@@ -70,6 +84,39 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { user, loading } = useUser();
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [checking, setChecking] = React.useState(true);
+  
+  React.useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      router.replace('/admin/login');
+      return;
+    }
+
+    user.getIdTokenResult().then(idTokenResult => {
+      const isAdminClaim = !!idTokenResult.claims.admin;
+      setIsAdmin(isAdminClaim);
+      setChecking(false);
+      if (!isAdminClaim) {
+        router.replace('/admin/login');
+      }
+    });
+
+  }, [user, loading, router]);
+
+
+  if (loading || checking || !isAdmin) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <Loader2 className="animate-spin size-8 text-primary" />
+        </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <AdminSidebar />
