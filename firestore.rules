@@ -27,6 +27,8 @@ service cloud.firestore {
     // Allow any signed-in user to create, update, or delete hotels.
     match /hotels/{hotelId} {
       allow read: if true;
+      // Allow creation if the user is signed in and the data is valid.
+      // Allow updates/deletes if the user is signed in.
       allow write: if isSignedIn();
 
       // Availability can be read by anyone, but only written by signed-in users.
