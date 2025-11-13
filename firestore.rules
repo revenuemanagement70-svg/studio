@@ -3,53 +3,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Use a custom claim "admin" set on the user account
     function isAdmin() {
-      return request.auth != null &&
-             request.auth.uid == "YOUR_ADMIN_UID";
+      return request.auth != null
+             && request.auth.token.admin == true;
     }
 
     match /hotels/{hotelId} {
-
-      // Public can read
       allow read: if true;
-
-      // Admin can create — Firestore gives unique ID automatically
       allow create: if isAdmin();
-
-      // Admin can update/delete
       allow update, delete: if isAdmin();
-      
-      // Availability sub-collection
+
       match /availability/{availabilityId} {
         allow read: if true;
         allow write: if isAdmin();
       }
     }
-    
-     // ------------------------------------------
-    // USERS (Only user can access their own data)
-    // ------------------------------------------
-    match /users/{userId} {
-      allow read, write: if request.auth != null
-                          && request.auth.uid == userId;
 
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
       match /favorites/{favoriteId} {
-        allow read, write: if request.auth != null
-                            && request.auth.uid == userId;
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // ------------------------------------------
-    // BOOKINGS
-    // ------------------------------------------
     match /bookings/{bookingId} {
-      allow read: if request.auth != null
-                   && resource.data.userId == request.auth.uid;
-
-      // Any signed-in user can create a booking
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null;
-
-      // Users cannot update/delete bookings
       allow update, delete: if false;
     }
   }
