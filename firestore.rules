@@ -14,10 +14,11 @@ service cloud.firestore {
     }
 
     // HOTELS
-    // Temporarily allowing all writes to debug permission issues.
+    // Allow anyone to read hotel listings.
+    // Only allow signed-in users to create, update, or delete hotels.
     match /hotels/{hotelId} {
       allow read: if true;
-      allow write: if true; // THIS IS TEMPORARY
+      allow write: if isSignedIn();
 
       // Availability can be read by anyone, but only written by signed-in users.
       match /availability/{availabilityId} {
