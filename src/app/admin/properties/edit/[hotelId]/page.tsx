@@ -8,24 +8,61 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useFirestore } from "@/firebase";
+import { useFirestore, useFirebase } from "@/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { updateHotel } from "@/firebase/firestore/hotels";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, MapPin, User, Mail, Phone, TrendingUp, Percent, ChevronsUpDown } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, User, Mail, Phone, TrendingUp, Percent, ChevronsUpDown, Upload, X, Image as ImageIcon } from "lucide-react";
 import type { hotel as Hotel } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { indianCities } from "@/lib/cities";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import Image from "next/image";
+import * as React from "react";
 
 const allAmenities = [
   "wifi", "pool", "gym", "parking", "restaurant", "room service", "air conditioning", "spa"
 ];
 
+function ImagePreview({ file, onRemove }: { file: File | string, onRemove: () => void }) {
+    const [preview, setPreview] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (typeof file === 'string') {
+            setPreview(file);
+        } else {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    }, [file]);
+
+    if (!preview) {
+        return <div className="w-24 h-24 bg-muted rounded-md flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+    }
+
+    return (
+         <div className="relative group">
+            <Image src={preview} alt="Hotel image" width={96} height={96} className="w-24 h-24 object-cover rounded-md" />
+             <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100"
+                onClick={onRemove}
+            >
+                <X className="h-4 w-4" />
+            </Button>
+        </div>
+    );
+}
+
 function EditPropertyForm({ hotelId }: { hotelId: string }) {
-  const firestore = useFirestore();
+  const { firestore, storage } = useFirebase() ?? {};
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -46,6 +83,9 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
   const [taxRate, setTaxRate] = useState("");
   const [commissionRate, setCommissionRate] = useState("");
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+  
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (!firestore || !hotelId) return;
@@ -72,6 +112,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
           setContactPhone(hotelData.contactPhone || "");
           setTaxRate(String(hotelData.taxRate || ""));
           setCommissionRate(String(hotelData.commissionRate || ""));
+          setExistingImageUrls(hotelData.imageUrls || []);
         } else {
           toast({
             variant: "destructive",
@@ -101,14 +142,30 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
         : [...prev, amenity]
     );
   };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+        const files = Array.from(e.target.files);
+        setNewImageFiles(prev => [...prev, ...files]);
+    }
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  const removeNewImage = (index: number) => {
+    setNewImageFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!firestore) {
+    if (!firestore || !storage) {
       toast({
         variant: "destructive",
         title: "Database Error",
-        description: "Firestore is not available.",
+        description: "Firestore or Storage is not available.",
       });
       return;
     }
@@ -129,7 +186,6 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
       price: Number(price),
       rating: Number(rating),
       amenities: selectedAmenities,
-      imageUrls: [`https://picsum.photos/seed/${name.replace(/\s+/g, '-')}/1200/800`],
       latitude: Number(latitude),
       longitude: Number(longitude),
       managerName,
@@ -141,7 +197,7 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
 
     startTransition(async () => {
       try {
-        await updateHotel(firestore, hotelId, hotelData);
+        await updateHotel(firestore, storage, hotelId, hotelData, newImageFiles, existingImageUrls);
         toast({
           title: "Property Updated!",
           description: `${name} has been successfully updated.`,
@@ -246,6 +302,32 @@ function EditPropertyForm({ hotelId }: { hotelId: string }) {
                         </div>
                     </div>
                 </div>
+            </CardContent>
+        </Card>
+
+         <Card>
+            <CardContent className="pt-6">
+                <h3 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><ImageIcon className="size-5" /> Property Images</h3>
+                 <div className="space-y-4">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                        {existingImageUrls.map((url, index) => (
+                            <ImagePreview key={index} file={url} onRemove={() => removeExistingImage(index)} />
+                        ))}
+                         {newImageFiles.map((file, index) => (
+                            <ImagePreview key={index + existingImageUrls.length} file={file} onRemove={() => removeNewImage(index)} />
+                        ))}
+                    </div>
+                    <div>
+                        <Label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, or WEBP</p>
+                            </div>
+                            <Input id="image-upload" type="file" className="hidden" onChange={handleImageChange} multiple accept="image/png, image/jpeg, image/webp" />
+                        </Label>
+                    </div>
+                 </div>
             </CardContent>
         </Card>
         
