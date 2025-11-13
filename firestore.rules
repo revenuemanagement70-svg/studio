@@ -15,16 +15,17 @@ service cloud.firestore {
     
     function isHotelDataValid() {
         let data = request.resource.data;
-        return data.name is string &&
-               data.streetAddress is string &&
-               data.city is string &&
-               data.price is number &&
-               data.rating is number &&
-               data.description is string &&
-               data.imageUrls is list &&
+        return data.name is string && data.name.size() > 0 &&
+               data.streetAddress is string && data.streetAddress.size() > 0 &&
+               data.city is string && data.city.size() > 0 &&
+               data.price is number && data.price >= 0 &&
+               data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+               data.description is string && data.description.size() > 0 &&
+               data.imageUrls is list && data.imageUrls.size() > 0 &&
                data.latitude is number &&
                data.longitude is number &&
                data.amenities is list &&
+               // Optional fields: check type only if they exist
                (!('managerName' in data) || data.managerName is string) &&
                (!('contactEmail' in data) || data.contactEmail is string) &&
                (!('contactPhone' in data) || data.contactPhone is string) &&
