@@ -92,14 +92,9 @@ export function Header() {
                 Logout
               </Button>
             ) : (
-              <>
-                <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
-                  <Link href="/login">Login</Link>
-                </Button>
-                <Button asChild className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
-              </>
+             <Button asChild className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                <Link href="/admin/login">Admin Login</Link>
+              </Button>
             )}
           </div>
 
@@ -155,14 +150,9 @@ export function Header() {
                           Logout
                         </Button>
                       ) : (
-                        <>
-                          <Button asChild variant="outline" className="w-full border-primary text-primary rounded-md">
-                            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                         <Button asChild className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                            <Link href="/admin/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
                           </Button>
-                          <Button asChild className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
-                            <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
-                          </Button>
-                        </>
                       )}
                         <a href="tel:+919899308683" className="text-center font-bold text-primary hover:underline mt-2">Call +91-98993-08683</a>
                     </div>

@@ -35,9 +35,6 @@ export function AuthForm({ mode, isAdminLogin = false }: AuthFormProps) {
   const title = isAdminLogin ? 'Admin Sign In' : (mode === 'login' ? 'Welcome Back!' : 'Create an Account');
   const description = isAdminLogin ? 'Enter your credentials to access the dashboard.' : (mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.');
   const buttonText = mode === 'login' ? 'Log In' : 'Sign Up';
-  const alternativeText = mode === 'login' ? "Don't have an account?" : 'Already have an account?';
-  const alternativeLink = mode === 'login' ? '/signup' : '/login';
-  const alternativeLinkText = mode === 'login' ? 'Sign Up' : 'Log In';
 
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -135,7 +132,7 @@ export function AuthForm({ mode, isAdminLogin = false }: AuthFormProps) {
           </Button>
         </form>
 
-        {!isAdminLogin && (
+        {isAdminLogin && (
           <>
             <div className="relative my-6">
               <Separator />
@@ -155,16 +152,6 @@ export function AuthForm({ mode, isAdminLogin = false }: AuthFormProps) {
           </>
         )}
       </CardContent>
-      {!isAdminLogin && (
-        <CardFooter className="justify-center">
-          <p className="text-sm text-muted-foreground">
-            {alternativeText}{' '}
-            <Link href={alternativeLink} className="font-semibold text-primary hover:underline">
-              {alternativeLinkText}
-            </Link>
-          </p>
-        </CardFooter>
-      )}
     </Card>
   );
 }
