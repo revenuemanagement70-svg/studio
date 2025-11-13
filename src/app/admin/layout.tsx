@@ -16,9 +16,10 @@ import {
 import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@/firebase';
 
 function AdminSidebar() {
   const navItems = [
@@ -84,15 +85,59 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useUser();
+  const [isVerified, setIsVerified] = React.useState(false);
+
+  React.useEffect(() => {
+    // Don't protect the login page itself
+    if (pathname === '/admin/login' || loading) {
+      return;
+    }
+    
+    // If loading is finished and there's no user, redirect.
+    if (!user) {
+      router.replace('/admin/login');
+      return;
+    }
+
+    // Bypass for the specific development user
+    if (user.email === 'email-1111@gmail.com') {
+        setIsVerified(true);
+        return;
+    }
+
+    // Check for admin claim for all other users
+    user.getIdTokenResult(true).then((idTokenResult) => {
+      const isAdminClaim = !!idTokenResult.claims.admin;
+      if (isAdminClaim) {
+        setIsVerified(true);
+      } else {
+        // If not an admin, redirect to login.
+        router.replace('/admin/login');
+      }
+    }).catch(() => {
+        // If token fails to resolve, redirect.
+        router.replace('/admin/login');
+    });
+
+  }, [user, loading, pathname, router]);
 
   // If on the login page, just render children without the admin sidebar.
   if (pathname === '/admin/login') {
       return <>{children}</>;
   }
 
-  // WORKAROUND: Login is bypassed for development.
-  // The original authentication logic has been removed.
-  // To re-enable it, please ask me to "secure the admin dashboard".
+  // While checking, show a loading screen.
+  if (!isVerified) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If verified, show the admin layout.
   return (
     <SidebarProvider>
       <AdminSidebar />
