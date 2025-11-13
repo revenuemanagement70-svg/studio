@@ -13,8 +13,8 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    // Simplified validation: check for the most essential fields.
-    function isHotelDataValid(data) {
+    // Corrected validation for creating a hotel. It does not check for an 'id'.
+    function isNewHotelDataValid(data) {
         return data.name is string && data.name.size() > 0
             && data.city is string && data.city.size() > 0
             && data.price is number && data.price > 0
@@ -23,15 +23,19 @@ service cloud.firestore {
     }
 
     // HOTELS
-    // Allow anyone to read hotel listings.
-    // Allow any signed-in user to create, update, or delete hotels.
     match /hotels/{hotelId} {
+      // Anyone can read hotel listings.
       allow read: if true;
-      // Allow creation if the user is signed in and the data is valid.
-      // Allow updates/deletes if the user is signed in.
-      allow write: if isSignedIn();
+      
+      // Only signed-in users who provide valid data can create a hotel.
+      allow create: if isSignedIn() && isNewHotelDataValid(request.resource.data);
 
-      // Availability can be read by anyone, but only written by signed-in users.
+      // Only signed-in users can update or delete hotels.
+      // Update/delete can have simpler rules as the document already exists.
+      allow update, delete: if isSignedIn();
+
+      // AVAILABILITY sub-collection
+      // Can be read by anyone, but only written by signed-in users.
       match /availability/{availabilityId} {
         allow read: if true;
         allow write: if isSignedIn();
