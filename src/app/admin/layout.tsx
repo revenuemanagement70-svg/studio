@@ -16,10 +16,7 @@ import {
 import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { usePathname, useRouter } from 'next/navigation';
 import { getAuth, signOut } from 'firebase/auth';
-import { Loader2 } from 'lucide-react';
-import { useUser } from '@/firebase';
 
 function AdminSidebar() {
   const navItems = [
@@ -84,64 +81,10 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { user, loading } = useUser();
-  const [isVerified, setIsVerified] = React.useState(false);
 
-  React.useEffect(() => {
-    if (loading) {
-      return; // Wait for the user state to be determined
-    }
+  // All authentication logic has been temporarily removed to bypass login.
+  // The admin section is now directly accessible.
 
-    if (!user) {
-      // If there's no user and they aren't on the login page, redirect them.
-      if (pathname !== '/admin/login') {
-        router.replace('/admin/login');
-      }
-      // If they are on the login page, we don't need to do anything.
-      // We also don't set isVerified to true here.
-      return;
-    }
-    
-    // If there is a user, check if they are an admin.
-    user.getIdTokenResult()
-      .then((idTokenResult) => {
-        const isAdminClaim = !!idTokenResult.claims.admin;
-        if (isAdminClaim) {
-          setIsVerified(true);
-          // If a verified admin is on the login page, redirect them to the dashboard.
-          if (pathname === '/admin/login') {
-            router.replace('/admin');
-          }
-        } else {
-          // If not an admin, redirect to login.
-          router.replace('/admin/login');
-        }
-      })
-      .catch(() => {
-        // If there's an error getting the token, redirect to login.
-        router.replace('/admin/login');
-      });
-
-  }, [user, loading, pathname, router]);
-
-  // While loading user state or if user is null (and we're not on login page), show loader.
-  // We also want to show the loader until verification is complete.
-  if (loading || (!isVerified && pathname !== '/admin/login')) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="size-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // If the user is on the login page, just show the content (the login form).
-  if (pathname === '/admin/login') {
-    return <main className="flex min-h-screen items-center justify-center p-4 bg-secondary/30">{children}</main>;
-  }
-
-  // If verified, show the admin layout.
   return (
     <SidebarProvider>
       <AdminSidebar />
