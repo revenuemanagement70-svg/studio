@@ -90,57 +90,56 @@ export default function AdminLayout({
   const [isVerified, setIsVerified] = React.useState(false);
 
   React.useEffect(() => {
-    // If we're still loading user state, do nothing.
     if (loading) {
+      return; // Wait for the user state to be determined
+    }
+
+    if (!user) {
+      // If there's no user and they aren't on the login page, redirect them.
+      if (pathname !== '/admin/login') {
+        router.replace('/admin/login');
+      }
+      // If they are on the login page, we don't need to do anything.
+      // We also don't set isVerified to true here.
       return;
     }
     
-    // If loading is finished and there's no user, redirect.
-    if (!user) {
-      // For now, we will simply grant access for development.
-      // In a real scenario, this would redirect to a login page.
-      // router.replace('/admin/login');
-      // For bypass, we'll allow access, but in a real app this would be a redirect
-      if (pathname.endsWith('/admin/login')) {
-         router.replace('/admin');
-      }
-      // The bypass email will handle verification below if it's used.
-    }
-
-    // Bypass for the specific development user
-    if (user?.email === 'email-1111@gmail.com') {
-        setIsVerified(true);
-        return;
-    }
-
-    // If there is a user but it's not the bypass email, 
-    // ideally we check claims, but for now we'll treat them as not verified.
-    // In a production scenario, this block would handle the admin claim check.
-    if (user && user.email !== 'email-1111@gmail.com') {
-        // For development, we'll just log this and not grant access.
-        // In production, you would redirect them or show an error.
-        console.warn("Access denied. User is not the designated bypass user.");
-        // We will default to not verified.
-        setIsVerified(false); 
-        // A production app would redirect: router.replace('/unauthorized-access');
-    }
-    
-    // Default to verified for development ease if no user is found after loading
-    if (!user) {
-      setIsVerified(true);
-    }
+    // If there is a user, check if they are an admin.
+    user.getIdTokenResult()
+      .then((idTokenResult) => {
+        const isAdminClaim = !!idTokenResult.claims.admin;
+        if (isAdminClaim) {
+          setIsVerified(true);
+          // If a verified admin is on the login page, redirect them to the dashboard.
+          if (pathname === '/admin/login') {
+            router.replace('/admin');
+          }
+        } else {
+          // If not an admin, redirect to login.
+          router.replace('/admin/login');
+        }
+      })
+      .catch(() => {
+        // If there's an error getting the token, redirect to login.
+        router.replace('/admin/login');
+      });
 
   }, [user, loading, pathname, router]);
 
-  // While checking, show a loading screen.
-  // We remove this check for a full bypass
-  // if (!isVerified) {
-  //   return (
-  //     <div className="flex min-h-screen items-center justify-center">
-  //       <Loader2 className="size-8 animate-spin" />
-  //     </div>
-  //   );
-  // }
+  // While loading user state or if user is null (and we're not on login page), show loader.
+  // We also want to show the loader until verification is complete.
+  if (loading || (!isVerified && pathname !== '/admin/login')) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If the user is on the login page, just show the content (the login form).
+  if (pathname === '/admin/login') {
+    return <main className="flex min-h-screen items-center justify-center p-4 bg-secondary/30">{children}</main>;
+  }
 
   // If verified, show the admin layout.
   return (
