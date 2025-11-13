@@ -15,15 +15,22 @@ export function useFavorites(userId: string | undefined) {
   const firestore = useFirestore();
   const [favorites, setFavorites] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const favoritesCollectionRef = useMemo(() => {
     if (!firestore || !userId) return null;
     return collection(firestore, 'users', userId, 'favorites');
   }, [firestore, userId]);
   
-  const { data: favoriteRefs, loading: favoriteRefsLoading } = useCollection<FavoriteRef>(favoritesCollectionRef);
+  const { data: favoriteRefs, loading: favoriteRefsLoading, error: favoriteRefsError } = useCollection<FavoriteRef>(favoritesCollectionRef);
 
   useEffect(() => {
+    if (favoriteRefsError) {
+      setError(favoriteRefsError);
+      setLoading(false);
+      return;
+    }
+
     if (favoriteRefsLoading) {
       setLoading(true);
       return;
@@ -52,8 +59,10 @@ export function useFavorites(userId: string | undefined) {
           );
           
           setFavorites(favoriteHotels.filter((h): h is Hotel => h !== null));
-        } catch (error) {
-           console.error("Error fetching favorite hotel details:", error);
+          setError(null);
+        } catch (err) {
+           console.error("Error fetching favorite hotel details:", err);
+           setError("Could not load favorite hotels.");
         } finally {
             setLoading(false);
         }
@@ -61,7 +70,7 @@ export function useFavorites(userId: string | undefined) {
     
     fetchFavoriteHotels();
 
-  }, [favoriteRefs, favoriteRefsLoading, firestore]);
+  }, [favoriteRefs, favoriteRefsLoading, favoriteRefsError, firestore]);
 
-  return { favorites, loading };
+  return { favorites, loading, error };
 }

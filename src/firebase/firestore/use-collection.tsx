@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type { CollectionReference, Query } from 'firebase/firestore';
 import { onSnapshot } from 'firebase/firestore';
 import { errorEmitter } from '../error-emitter';
@@ -28,19 +28,22 @@ export function useCollection<T>(ref: CollectionReference | Query | null) {
         setError(null);
       },
       (err) => {
-        console.error(`Error fetching collection at ${ref.path}:`, err);
+        console.error(`Error fetching collection at ref path:`, err);
         setError(`Failed to fetch data. Check permissions or network.`);
-        const permissionError = new FirestorePermissionError({
-          path: ref.path,
-          operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
+        if (ref && 'path' in ref) {
+            const permissionError = new FirestorePermissionError({
+            path: ref.path,
+            operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [ref]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref?.path]);
 
   return { data, loading, error };
 }

@@ -26,8 +26,10 @@ export async function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>) {
 export async function updateHotel(db: Firestore, hotelId: string, hotelData: Partial<Hotel>) {
     const hotelRef = doc(db, 'hotels', hotelId);
     
-    updateDoc(hotelRef, hotelData)
-    .catch((serverError) => {
+    try {
+        await updateDoc(hotelRef, hotelData);
+    }
+    catch (serverError) {
         const permissionError = new FirestorePermissionError({
             path: hotelRef.path,
             operation: 'update',
@@ -35,7 +37,7 @@ export async function updateHotel(db: Firestore, hotelId: string, hotelData: Par
         });
         errorEmitter.emit('permission-error', permissionError);
         throw serverError;
-    });
+    };
 }
 
 export async function deleteHotel(db: Firestore, hotelId: string) {
@@ -45,15 +47,17 @@ export async function deleteHotel(db: Firestore, hotelId: string) {
     const batch = writeBatch(db);
     batch.delete(hotelRef);
     
-    const usersSnapshot = await getDocs(query(collection(db, "users")));
-    for (const userDoc of usersSnapshot.docs) {
-        const favoritesCollectionRef = collection(db, "users", userDoc.id, "favorites");
-        const favoriteDocRef = doc(favoritesCollectionRef, hotelId);
-        // We just add a delete operation to the batch. If the doc doesn't exist, this is a no-op.
-        batch.delete(favoriteDocRef);
-    }
-    
-    await batch.commit().catch((serverError) => {
+    try {
+        const usersSnapshot = await getDocs(query(collection(db, "users")));
+        for (const userDoc of usersSnapshot.docs) {
+            const favoritesCollectionRef = collection(db, "users", userDoc.id, "favorites");
+            const favoriteDocRef = doc(favoritesCollectionRef, hotelId);
+            // We just add a delete operation to the batch. If the doc doesn't exist, this is a no-op.
+            batch.delete(favoriteDocRef);
+        }
+        
+        await batch.commit();
+    } catch (serverError) {
         const permissionError = new FirestorePermissionError({
             path: hotelRef.path,
             operation: 'delete'
@@ -61,5 +65,5 @@ export async function deleteHotel(db: Firestore, hotelId: string) {
         errorEmitter.emit('permission-error', permissionError);
         // Re-throw the original error to be caught by the UI
         throw serverError;
-    });
+    }
 }
