@@ -98,12 +98,13 @@ export default function AddPropertyPage() {
             router.push("/admin/properties");
         })
         .catch((error) => {
-            // Error is already emitted by addHotel, so we just show a generic toast here.
-            // The FirebaseErrorListener will show the detailed error.
+            // The contextual error is now emitted by addHotel.
+            // The FirebaseErrorListener will show the detailed error in the console.
+            // We show a generic toast to the user.
             toast({
               variant: "destructive",
               title: "Uh oh! Something went wrong.",
-              description: "Could not add property. Check console for details.",
+              description: "Could not add property. See console for details.",
             });
         });
     });
