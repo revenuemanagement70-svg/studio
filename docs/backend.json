@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "user": {
@@ -31,13 +32,21 @@
       "description": "A hotel property listed on the platform.",
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique ID of the hotel."
+        },
         "name": {
           "type": "string",
           "description": "The name of the hotel."
         },
-        "address": {
-          "type": "string",
-          "description": "The address of the hotel."
+        "streetAddress": {
+            "type": "string",
+            "description": "The street address of the hotel."
+        },
+        "city": {
+            "type": "string",
+            "description": "The city where the hotel is located."
         },
         "price": {
           "type": "number",
@@ -57,44 +66,147 @@
         "description": {
           "type": "string",
           "description": "A short description of the hotel."
+        },
+        "imageUrls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "A list of URLs for the hotel's photos."
+        },
+        "latitude": {
+            "type": "number",
+            "description": "The latitude of the hotel's location."
+        },
+        "longitude": {
+            "type": "number",
+            "description": "The longitude of the hotel's location."
+        },
+        "managerName": {
+            "type": "string",
+            "description": "The name of the hotel manager."
+        },
+        "contactEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "The contact email address for the hotel."
+        },
+        "contactPhone": {
+            "type": "string",
+            "description": "The contact phone number for the hotel."
+        },
+        "taxRate": {
+            "type": "number",
+            "description": "The tax rate percentage for the hotel."
+        },
+        "commissionRate": {
+            "type": "number",
+            "description": "The commission rate percentage for the hotel."
         }
       },
-      "required": ["name", "address", "price", "rating", "description"]
+      "required": ["name", "streetAddress", "city", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
     },
     "favoriteHotel": {
-      "title": "Favorite Hotel",
-      "description": "A hotel that a user has saved as a favorite.",
+      "title": "Favorite Hotel Reference",
+      "description": "A reference to a hotel that a user has saved as a favorite.",
       "type": "object",
       "properties": {
-        "name": {
+        "hotelId": {
           "type": "string",
-          "description": "The name of the hotel."
-        },
-        "address": {
-          "type": "string",
-          "description": "The address of the hotel."
-        },
-        "price": {
-          "type": "number",
-          "description": "The price per night of the hotel."
-        },
-        "rating": {
-          "type": "number",
-          "description": "The rating of the hotel (out of 5)."
-        },
-        "amenities": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The list of amenities offered by the hotel."
-        },
-        "description": {
-          "type": "string",
-          "description": "A short description of the hotel."
+          "description": "The ID of the favorited hotel document in the /hotels collection."
         }
       },
-      "required": ["name", "address", "price", "rating", "description"]
+      "required": ["hotelId"]
+    },
+    "booking": {
+      "title": "Booking",
+      "description": "A record of a hotel booking made by a user.",
+      "type": "object",
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "description": "The unique 7-character ID for the booking, starting with 'Sty'."
+        },
+        "hotelId": {
+          "type": "string",
+          "description": "The ID of the booked hotel."
+        },
+        "hotelName": {
+          "type": "string",
+          "description": "The name of the booked hotel."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who made the booking."
+        },
+        "userName": {
+          "type": "string",
+          "description": "The name of the user who made the booking."
+        },
+        "userEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the user who made the booking."
+        },
+        "checkin": {
+          "type": "string",
+          "format": "date",
+          "description": "The check-in date."
+        },
+        "checkout": {
+          "type": "string",
+          "format": "date",
+          "description": "The check-out date."
+        },
+        "guests": {
+          "type": "number",
+          "description": "The number of guests."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "The total price of the booking."
+        },
+        "bookedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the booking was made."
+        }
+      },
+      "required": [
+        "bookingId",
+        "hotelId",
+        "hotelName",
+        "userId",
+        "userName",
+        "userEmail",
+        "checkin",
+        "checkout",
+        "guests",
+        "totalPrice",
+        "bookedAt"
+      ]
+    },
+    "roomAvailability": {
+        "title": "Room Availability",
+        "description": "Defines the pricing and number of available rooms for a specific date.",
+        "type": "object",
+        "properties": {
+            "date": {
+                "type": "string",
+                "format": "date",
+                "description": "The specific date for this availability entry (YYYY-MM-DD)."
+            },
+            "price": {
+                "type": "number",
+                "description": "The price for a room on this specific date."
+            },
+            "roomsAvailable": {
+                "type": "number",
+                "description": "The number of rooms available for booking on this date."
+            }
+        },
+        "required": ["date", "price", "roomsAvailable"]
     }
   },
   "auth": {
@@ -102,16 +214,28 @@
   },
   "firestore": {
     "/hotels/{hotelId}": {
+      "schema": {
+        "$ref": "#/entities/hotel"
+      },
+      "description": "A list of all hotel properties."
+    },
+    "/hotels/{hotelId}/availability/{availabilityId}": {
         "schema": {
-            "$ref": "#/entities/hotel"
+            "$ref": "#/entities/roomAvailability"
         },
-        "description": "A list of all hotel properties."
+        "description": "Availability and pricing information for a specific hotel on a specific date."
     },
     "/users/{userId}/favorites/{favoriteId}": {
       "schema": {
         "$ref": "#/entities/favoriteHotel"
       },
-      "description": "A user's list of favorite hotels."
+      "description": "A user's list of favorite hotel references."
+    },
+    "/bookings/{bookingId}": {
+      "schema": {
+        "$ref": "#/entities/booking"
+      },
+      "description": "A collection of all bookings made on the platform."
     }
   }
 }
