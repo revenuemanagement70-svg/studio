@@ -9,19 +9,19 @@ import { FirestorePermissionError } from '@/firebase/errors';
 export function addHotel(db: Firestore, hotel: Omit<Hotel, 'id'>): Promise<any> {
     const hotelsCollection = collection(db, 'hotels');
     
-    return new Promise((resolve, reject) => {
-        addDoc(hotelsCollection, hotel)
-            .then(resolve)
-            .catch((serverError) => {
-                const permissionError = new FirestorePermissionError({
-                    path: hotelsCollection.path,
-                    operation: 'create',
-                    requestResourceData: hotel,
-                });
-                errorEmitter.emit('permission-error', permissionError);
-                reject(serverError); // Reject the promise to be caught by the UI
+    // The addDoc promise itself doesn't need to be wrapped in a new Promise.
+    // We can directly chain .then() and .catch() to it.
+    return addDoc(hotelsCollection, hotel)
+        .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: hotelsCollection.path,
+                operation: 'create',
+                requestResourceData: hotel,
             });
-    });
+            errorEmitter.emit('permission-error', permissionError);
+            // Reject the promise so the calling code's catch block is executed.
+            return Promise.reject(serverError);
+        });
 }
 
 export async function updateHotel(db: Firestore, hotelId: string, hotelData: Partial<Hotel>) {
