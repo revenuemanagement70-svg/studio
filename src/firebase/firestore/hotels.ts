@@ -86,24 +86,29 @@ export async function updateHotel(
 
 export async function deleteHotel(db: Firestore, hotelId: string) {
     const hotelRef = doc(db, 'hotels', hotelId);
+    const usersCollectionRef = collection(db, "users");
 
-    // Soft delete: set a 'deleted' flag instead of permanently removing the document.
     try {
+        // Soft delete the hotel document
         await updateDoc(hotelRef, { deleted: true, deletedAt: new Date() });
-        
-        // We still need to remove it from favorites, which is a hard delete.
+
+        // Batch delete the hotel from all users' favorites subcollections
         const batch = writeBatch(db);
-        const usersSnapshot = await getDocs(query(collection(db, "users")));
+        const usersSnapshot = await getDocs(query(usersCollectionRef));
+        
         for (const userDoc of usersSnapshot.docs) {
             const favoriteDocRef = doc(db, "users", userDoc.id, "favorites", hotelId);
             batch.delete(favoriteDocRef);
         }
+        
         await batch.commit();
 
     } catch (serverError) {
+        // This will catch errors from either updateDoc or batch.commit
         const permissionError = new FirestorePermissionError({
-            path: hotelRef.path,
-            operation: 'update' // operation is now update for soft delete
+            path: hotelRef.path, // The primary resource being operated on
+            operation: 'write', // A generic write since it involves updates and deletes
+            requestResourceData: { hotelId, action: "delete and clean up favorites" }
         });
         errorEmitter.emit('permission-error', permissionError);
         // Re-throw the original error to be caught by the UI
