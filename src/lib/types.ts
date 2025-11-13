@@ -1,7 +1,3 @@
-
-
-
-
 export type hotel = {
     id: string;
     name: string;

@@ -104,7 +104,7 @@
             "description": "The commission rate percentage for the hotel."
         }
       },
-      "required": ["id", "name", "streetAddress", "city", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
+      "required": ["name", "streetAddress", "city", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
     },
     "favoriteHotel": {
       "title": "Favorite Hotel Reference",

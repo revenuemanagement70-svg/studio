@@ -1,43 +1,32 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: Check if user is signed in
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Helper: Check if user is the admin (your UID)
     function isAdmin() {
-      // IMPORTANT: Replace "YOUR_ADMIN_UID" with your actual Firebase User ID.
       return request.auth != null &&
              request.auth.uid == "YOUR_ADMIN_UID";
     }
 
-    // ------------------------------------------
-    // HOTELS (Admin writes, public reads)
-    // ------------------------------------------
     match /hotels/{hotelId} {
 
-      // Public can read hotels
+      // Public can read
       allow read: if true;
 
-      // ONLY admin can create a property
+      // Admin can create — Firestore gives unique ID automatically
       allow create: if isAdmin();
 
-      // ONLY admin can edit or delete
+      // Admin can update/delete
       allow update, delete: if isAdmin();
-
+      
       // Availability sub-collection
       match /availability/{availabilityId} {
         allow read: if true;
         allow write: if isAdmin();
       }
     }
-
-    // ------------------------------------------
+    
+     // ------------------------------------------
     // USERS (Only user can access their own data)
     // ------------------------------------------
     match /users/{userId} {
@@ -54,11 +43,11 @@ service cloud.firestore {
     // BOOKINGS
     // ------------------------------------------
     match /bookings/{bookingId} {
-      allow read: if isSignedIn() 
+      allow read: if request.auth != null
                    && resource.data.userId == request.auth.uid;
 
       // Any signed-in user can create a booking
-      allow create: if isSignedIn();
+      allow create: if request.auth != null;
 
       // Users cannot update/delete bookings
       allow update, delete: if false;

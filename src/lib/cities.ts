@@ -252,4 +252,3 @@ export const indianCities = [
     "Vasco Da Gama",
     "Goa"
   ].filter((v, i, a) => a.indexOf(v) === i).sort()
-  
