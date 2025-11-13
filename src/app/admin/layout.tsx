@@ -113,7 +113,7 @@ export default function AdminLayout({
     // user.getIdTokenResult().then(idTokenResult => {
     //   const isAdminClaim = !!idTokenResult.claims.admin;
     //   if (isAdminClaim) {
-    셔        setIsVerified(true);
+    //     setIsVerified(true);
     //   } else {
     //     // If not an admin, redirect to login.
     //     router.replace('/admin/login');
