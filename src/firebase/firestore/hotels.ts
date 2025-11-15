@@ -20,30 +20,40 @@ export async function addHotel(
     hotel: Omit<Hotel, 'id' | 'imageUrls'>,
     imageFiles: File[]
 ) {
-    const hotelsCollection = collection(db, 'hotels');
+    const hotelsDraftCollection = collection(db, 'hotels_draft');
     
-    try {
-        // First, create the hotel document to get an ID
-        const docRef = await addDoc(hotelsCollection, { ...hotel, imageUrls: [] });
-        const hotelId = docRef.id;
+    // Create the hotel document to get an ID. This is the operation that likely fails.
+    const docRef = await addDoc(hotelsDraftCollection, { ...hotel, imageUrls: [] })
+        .catch((serverError) => {
+            const permissionError = new FirestorePermissionError({
+                path: hotelsDraftCollection.path,
+                operation: 'create',
+                requestResourceData: hotel,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            // Re-throw the original error to ensure the UI knows the operation failed.
+            throw serverError;
+        });
 
-        // Then, upload images using the hotel ID in the path
-        const imageUrls = await uploadImages(storage, hotelId, imageFiles);
+    const hotelId = docRef.id;
 
-        // Finally, update the hotel document with the image URLs
-        await updateDoc(docRef, { imageUrls });
+    // Then, upload images using the hotel ID in the path
+    const imageUrls = await uploadImages(storage, hotelId, imageFiles);
 
-        return docRef;
-
-    } catch (serverError) {
+    // Finally, update the hotel document with the image URLs
+    await updateDoc(docRef, { imageUrls })
+     .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
-            path: hotelsCollection.path,
-            operation: 'create',
-            requestResourceData: hotel,
+            path: docRef.path,
+            operation: 'update',
+            requestResourceData: { imageUrls },
         });
         errorEmitter.emit('permission-error', permissionError);
+        // Re-throw the original error to ensure the UI knows the operation failed.
         throw serverError;
-    }
+    });
+
+    return docRef;
 }
 
 
