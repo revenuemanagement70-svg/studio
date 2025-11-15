@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -5,10 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { User, Key, Bell, Palette } from "lucide-react";
+import { User, Key, Bell, Palette, TestTube } from "lucide-react";
+import { useFirestore } from "@/firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { errorEmitter } from "@/firebase/error-emitter";
+import { FirestorePermissionError } from "@/firebase/errors";
 
 export default function SettingsPage() {
     const { toast } = useToast();
+    const firestore = useFirestore();
 
     const handleSave = (section: string) => {
         toast({
@@ -16,6 +22,38 @@ export default function SettingsPage() {
             description: `Your ${section} settings have been updated. (This is a demo).`
         })
     }
+
+    const handleTestWrite = () => {
+        if (!firestore) {
+            toast({ variant: "destructive", title: "Firestore not initialized." });
+            return;
+        }
+
+        const draftsCollection = collection(firestore, 'hotels_draft');
+        const testData = { name: "Debug Test Hotel", createdAt: new Date() };
+
+        addDoc(draftsCollection, testData)
+            .then((docRef) => {
+                toast({
+                    title: "Write Test Successful!",
+                    description: `Document written with ID: ${docRef.id}`,
+                });
+            })
+            .catch((serverError) => {
+                const permissionError = new FirestorePermissionError({
+                    path: draftsCollection.path,
+                    operation: 'create',
+                    requestResourceData: testData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+                 toast({
+                    variant: "destructive",
+                    title: "Write Test Failed",
+                    description: "Check the developer console for the full contextual error.",
+                });
+            });
+    };
+
 
     return (
         <div>
@@ -25,6 +63,16 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><TestTube className="size-5" /> Firestore Write Test</CardTitle>
+                        <CardDescription>Use this button to test if your account has permission to create documents in the 'hotels_draft' collection.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button onClick={handleTestWrite}>Test Draft Creation</Button>
+                    </CardContent>
+                </Card>
+
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><User className="size-5" /> Profile</CardTitle>
