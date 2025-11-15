@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp } from 'lucide-react';
+import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarCheck, TrendingUp, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { getAuth, signOut } from 'firebase/auth';
@@ -22,6 +22,7 @@ function AdminSidebar() {
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: <Home /> },
     { href: '/admin/properties', label: 'Properties', icon: <Hotel /> },
+    { href: '/admin/drafts', label: 'Drafts', icon: <FileText /> },
     { href: '/admin/bookings', label: 'Bookings', icon: <BedDouble /> },
     { href: '/admin/availability', label: 'Availability', icon: <CalendarCheck /> },
     { href: '/admin/finance', label: 'Finance', icon: <TrendingUp /> },
