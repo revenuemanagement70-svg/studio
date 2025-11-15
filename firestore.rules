@@ -10,8 +10,8 @@ service cloud.firestore {
     }
     
     match /hotels_draft/{draftId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if isAdmin();
+      allow create, read: if request.auth != null;
+      allow update, delete: if isAdmin();
     }
 
     match /users/{userId} { allow read, write: if request.auth != null && request.auth.uid == userId;
