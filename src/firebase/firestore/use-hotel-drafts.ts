@@ -13,7 +13,7 @@ export function useHotelDrafts() {
 
   const draftsQuery = useMemo(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'hotels_draft'));
+    return query(collection(firestore, 'hotels'));
   }, [firestore]);
 
   const { data: drafts, loading, error } = useCollection<Hotel>(draftsQuery);
@@ -22,7 +22,7 @@ export function useHotelDrafts() {
 }
 
 export async function publishHotelDraft(db: Firestore, draft: Hotel) {
-    const draftRef = doc(db, 'hotels_draft', draft.id);
+    const draftRef = doc(db, 'hotels', draft.id);
     const hotelRef = doc(db, 'hotels', draft.id);
 
     const batch = writeBatch(db);
@@ -37,7 +37,7 @@ export async function publishHotelDraft(db: Firestore, draft: Hotel) {
         await batch.commit();
     } catch(serverError) {
         const permissionError = new FirestorePermissionError({
-            path: `/hotels_draft/${draft.id} -> /hotels/${draft.id}`,
+            path: `/hotels/${draft.id} -> /hotels/${draft.id}`,
             operation: 'write',
             requestResourceData: draft
         });

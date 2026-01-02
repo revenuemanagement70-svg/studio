@@ -20,7 +20,7 @@ export async function addHotel(
     hotel: Omit<Hotel, 'id' | 'imageUrls'>,
     imageFiles: File[]
 ) {
-    const hotelsDraftCollection = collection(db, 'hotels_draft');
+    const hotelsDraftCollection = collection(db, 'hotels');
     
     // Create the hotel document to get an ID. This is the operation that likely fails.
     const docRef = await addDoc(hotelsDraftCollection, { ...hotel, imageUrls: [] })
