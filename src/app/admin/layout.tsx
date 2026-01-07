@@ -17,12 +17,13 @@ import { Home, Hotel, PlusCircle, Settings, LogOut, Book, BedDouble, CalendarChe
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { getAuth, signOut } from 'firebase/auth';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 function AdminSidebar() {
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: <Home /> },
     { href: '/admin/properties', label: 'Properties', icon: <Hotel /> },
-    { href: '/admin/drafts', label: 'Drafts', icon: <FileText /> },
     { href: '/admin/bookings', label: 'Bookings', icon: <BedDouble /> },
     { href: '/admin/availability', label: 'Availability', icon: <CalendarCheck /> },
     { href: '/admin/finance', label: 'Finance', icon: <TrendingUp /> },
@@ -82,9 +83,22 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+    const { user, isUserLoading } = useUser();
+    const router = useRouter();
 
-  // All authentication logic has been temporarily removed to bypass login.
-  // The admin section is now directly accessible.
+    React.useEffect(() => {
+        if (!isUserLoading && !user) {
+            router.push('/login');
+        }
+    }, [user, isUserLoading, router]);
+
+    if (isUserLoading || !user) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p>Loading...</p>
+            </div>
+        );
+    }
 
   return (
     <SidebarProvider>

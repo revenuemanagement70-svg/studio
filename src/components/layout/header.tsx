@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { getAuth, signOut } from 'firebase/auth';
 import { Separator } from '../ui/separator';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: '#home', label: 'Home', icon: <Home /> },
@@ -22,6 +23,7 @@ export function Header() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const { user, loading } = useUser();
+  const router = useRouter();
 
   const handleLogout = async () => {
     const auth = getAuth();
@@ -87,14 +89,22 @@ export function Header() {
             </Button>
             <Separator orientation="vertical" className="h-6" />
             {loading ? null : user ? (
-              <Button onClick={handleLogout} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
-                <LogOut className="size-4 mr-2" />
-                Logout
-              </Button>
+               <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => router.push('/admin')}>Admin</Button>
+                <Button onClick={handleLogout} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
+                    <LogOut className="size-4 mr-2" />
+                    Logout
+                </Button>
+              </div>
             ) : (
-             <Button asChild className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
-                <Link href="/admin/login">Admin Login</Link>
-              </Button>
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="ghost" size="sm">
+                        <Link href="/login">Log In</Link>
+                    </Button>
+                    <Button asChild className="bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                        <Link href="/login?mode=signup">Sign Up</Link>
+                    </Button>
+                </div>
             )}
           </div>
 
@@ -138,7 +148,7 @@ export function Header() {
                         <li>
                             <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
                                 <Building className="size-5" />
-                                List your property
+                                Admin
                             </Link>
                         </li>
                         </ul>
@@ -150,9 +160,14 @@ export function Header() {
                           Logout
                         </Button>
                       ) : (
-                         <Button asChild className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
-                            <Link href="/admin/login" onClick={() => setMobileMenuOpen(false)}>Admin Login</Link>
-                          </Button>
+                         <div className="flex flex-col gap-4">
+                            <Button asChild className="w-full bg-gradient-to-r from-primary to-accent text-white font-bold rounded-md">
+                                <Link href="/login?mode=signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+                            </Button>
+                             <Button asChild variant="outline" className="w-full">
+                                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Log In</Link>
+                            </Button>
+                         </div>
                       )}
                         <a href="tel:+919899308683" className="text-center font-bold text-primary hover:underline mt-2">Call +91-98993-08683</a>
                     </div>
