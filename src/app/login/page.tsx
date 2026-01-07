@@ -1,8 +1,8 @@
 'use client';
 
 import { Suspense } from 'react';
-import { AuthForm } from '@/components/auth/auth-form';
 import { useSearchParams } from 'next/navigation';
+import { AuthForm } from '@/components/auth/auth-form';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function LoginContent() {
