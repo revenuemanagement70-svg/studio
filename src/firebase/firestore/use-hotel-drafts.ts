@@ -11,6 +11,7 @@ import { FirestorePermissionError } from '../errors';
 export function useHotelDrafts() {
   const firestore = useFirestore();
 
+  // Pointing directly to the 'hotels' collection now.
   const draftsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'hotels'));
@@ -21,27 +22,9 @@ export function useHotelDrafts() {
   return { drafts, loading, error };
 }
 
-export async function publishHotelDraft(db: Firestore, draft: Hotel) {
-    const draftRef = doc(db, 'hotels', draft.id);
-    const hotelRef = doc(db, 'hotels', draft.id);
-
-    const batch = writeBatch(db);
-
-    // Copy the draft data to the live hotels collection
-    batch.set(hotelRef, { ...draft, id: undefined }); // Remove id from data payload
-    
-    // Delete the draft document
-    batch.delete(draftRef);
-
-    try {
-        await batch.commit();
-    } catch(serverError) {
-        const permissionError = new FirestorePermissionError({
-            path: `/hotels/${draft.id} -> /hotels/${draft.id}`,
-            operation: 'write',
-            requestResourceData: draft
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw serverError;
-    }
+// This function is no longer complex. It simply resolves a promise
+// as the concept of "publishing" is removed from this simplified flow.
+export async function publishHotelDraft(db: Firestore, draft: Hotel): Promise<void> {
+    console.log("Publishing is no longer required in this simplified flow for:", draft.id);
+    return Promise.resolve();
 }

@@ -20,27 +20,27 @@ export async function addHotel(
     hotel: Omit<Hotel, 'id' | 'imageUrls'>,
     imageFiles: File[]
 ) {
-    const hotelsDraftCollection = collection(db, 'hotels');
+    // Changed from 'hotels_draft' to 'hotels' to write directly.
+    const hotelsCollection = collection(db, 'hotels');
     
-    // Create the hotel document to get an ID. This is the operation that likely fails.
-    const docRef = await addDoc(hotelsDraftCollection, { ...hotel, imageUrls: [] })
+    // Add the document with initial data.
+    const docRef = await addDoc(hotelsCollection, { ...hotel, imageUrls: [] })
         .catch((serverError) => {
             const permissionError = new FirestorePermissionError({
-                path: hotelsDraftCollection.path,
+                path: hotelsCollection.path,
                 operation: 'create',
                 requestResourceData: hotel,
             });
             errorEmitter.emit('permission-error', permissionError);
-            // Re-throw the original error to ensure the UI knows the operation failed.
-            throw serverError;
+            throw serverError; // Re-throw to notify the UI of failure.
         });
 
     const hotelId = docRef.id;
 
-    // Then, upload images using the hotel ID in the path
+    // Upload images using the new hotel's ID.
     const imageUrls = await uploadImages(storage, hotelId, imageFiles);
 
-    // Finally, update the hotel document with the image URLs
+    // Update the hotel document with the final image URLs.
     await updateDoc(docRef, { imageUrls })
      .catch((serverError) => {
         const permissionError = new FirestorePermissionError({
@@ -49,8 +49,7 @@ export async function addHotel(
             requestResourceData: { imageUrls },
         });
         errorEmitter.emit('permission-error', permissionError);
-        // Re-throw the original error to ensure the UI knows the operation failed.
-        throw serverError;
+        throw serverError; // Re-throw to notify the UI of failure.
     });
 
     return docRef;

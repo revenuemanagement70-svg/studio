@@ -22,8 +22,9 @@ function DraftCard({ draft, onPublished }: { draft: Hotel, onPublished: (id: str
         }
         setIsPublishing(true);
         try {
+            // This function now does nothing, but we keep the flow for UI consistency.
             await publishHotelDraft(firestore, draft);
-            toast({ title: 'Draft Published!', description: `${draft.name} is now live.` });
+            toast({ title: 'Action noted!', description: `${draft.name} is already live.` });
             onPublished(draft.id);
         } catch (error) {
             console.error("Publishing error: ", error);
@@ -39,9 +40,8 @@ function DraftCard({ draft, onPublished }: { draft: Hotel, onPublished: (id: str
                 <h3 className="font-bold font-headline">{draft.name}</h3>
                 <p className="text-sm text-muted-foreground">{draft.streetAddress}, {draft.city}</p>
             </div>
-            <Button onClick={handlePublish} disabled={isPublishing}>
-                 {isPublishing && <Loader2 className="animate-spin mr-2" />}
-                {isPublishing ? 'Publishing...' : 'Publish'}
+            <Button onClick={handlePublish} disabled={true} variant="outline">
+                Published
             </Button>
         </Card>
     );
@@ -53,24 +53,24 @@ export default function DraftsPage() {
     const [publishedIds, setPublishedIds] = useState<string[]>([]);
 
     const handleDraftPublished = (id: string) => {
-        setPublishedIds(prev => [...prev, id]);
+        // This is kept for now but could be removed as publishing is automatic.
     };
 
-    const visibleDrafts = drafts.filter(d => !publishedIds.includes(d.id));
+    const visibleDrafts = drafts.filter(d => !d.deleted);
 
     return (
         <div>
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold font-headline">Drafts</h1>
-                    <p className="text-muted-foreground">Review and publish new property submissions.</p>
+                    <h1 className="text-3xl font-bold font-headline">Hotel Properties</h1>
+                    <p className="text-muted-foreground">A list of all live properties. The draft and publish system has been disabled.</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Submitted Drafts</CardTitle>
-                    <CardDescription>These properties are waiting for review. Publishing them will make them live on the site.</CardDescription>
+                    <CardTitle>Live Properties</CardTitle>
+                    <CardDescription>These properties are live on the site. The draft system is disabled.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {loading && (
@@ -88,7 +88,7 @@ export default function DraftsPage() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground text-center py-8">No pending drafts found.</p>
+                            <p className="text-muted-foreground text-center py-8">No properties found.</p>
                         )
                     )}
                 </CardContent>
