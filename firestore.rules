@@ -1,56 +1,21 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: Check if user is signed in
-    function isSignedIn() {
-      return request.auth != null;
+    // Allow read and write only if the user is authenticated
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
 
-    // Helper: Check if the user is the owner of the document
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    // ------------------------------------------
-    // USERS
-    // ------------------------------------------
+    // Allow users to read and write only their own data (for example, their own bookings)
     match /users/{userId} {
-      // Users can create, read, and update their own profile. Deletion is disallowed.
-      allow read, write: if isOwner(userId);
-
-      // Anyone can read a user's favorite hotels, but only the owner can manage them.
-      match /favorites/{favoriteId} {
-        allow read: if isSignedIn();
-        allow write: if isOwner(userId);
-      }
+      allow read, write: if request.auth.uid == userId;
     }
 
-    // ------------------------------------------
-    // HOTELS (Public reads, Authenticated writes)
-    // ------------------------------------------
-    match /hotels/{hotelId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-
-      // Anyone can read availability, but only signed-in users (admins) can change it.
-      match /availability/{availabilityId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-    }
-
-    // ------------------------------------------
-    // BOOKINGS
-    // ------------------------------------------
+    // Allow users to read and write their own bookings
     match /bookings/{bookingId} {
-      // A user can read their own booking.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      // Any signed-in user can create a booking.
-      allow create: if isSignedIn();
-      // Updates and deletes are disallowed to preserve booking history.
-      allow update, delete: if false;
+      allow read, write: if request.auth.uid == resource.data.userId;
     }
   }
 }
