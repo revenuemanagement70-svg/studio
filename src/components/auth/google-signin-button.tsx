@@ -1,10 +1,12 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { error } from 'console';
+import { createUserProfile } from '@/firebase/firestore/users';
+import { Loader2 } from 'lucide-react';
 
 const GoogleIcon = () => (
   <svg className="size-5" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -19,14 +21,17 @@ const GoogleIcon = () => (
 interface GoogleSignInButtonProps {
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
+    disabled?: boolean;
+    loading?: boolean;
 }
 
-export function GoogleSignInButton({ setLoading, setError }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ setLoading, setError, disabled, loading }: GoogleSignInButtonProps) {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   
   const handleGoogleSignIn = async () => {
-    if (!auth) {
+    if (!auth || !firestore) {
         setError("Authentication service is not available.");
         return;
     }
@@ -36,19 +41,23 @@ export function GoogleSignInButton({ setLoading, setError }: GoogleSignInButtonP
     
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      router.push('/');
+      const userCredential = await signInWithPopup(auth, provider);
+      // Create user profile document in Firestore if it doesn't exist
+      await createUserProfile(firestore, userCredential.user);
+      router.push('/admin');
     } catch (err: any) {
-      setError(err.message);
+      const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';
+      setError(friendlyError.charAt(0).toUpperCase() + friendlyError.slice(1));
     } finally {
         setLoading(false);
     }
   };
 
   return (
-    <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-      <GoogleIcon />
-      <span className="ml-2">Sign in with Google</span>
+    <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={disabled}>
+      {loading && <Loader2 className="animate-spin" />}
+      {!loading && <GoogleIcon />}
+      <span className="ml-2">{loading ? "Connecting..." : "Sign in with Google"}</span>
     </Button>
   );
 }

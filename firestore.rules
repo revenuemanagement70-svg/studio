@@ -14,12 +14,27 @@ service cloud.firestore {
     }
 
     // ------------------------------------------
-    // HOTELS (Authenticated writes, Public reads)
+    // USERS
+    // ------------------------------------------
+    match /users/{userId} {
+      // Users can create, read, and update their own profile. Deletion is disallowed.
+      allow read, write: if isOwner(userId);
+
+      // Anyone can read a user's favorite hotels, but only the owner can manage them.
+      match /favorites/{favoriteId} {
+        allow read: if isSignedIn();
+        allow write: if isOwner(userId);
+      }
+    }
+
+    // ------------------------------------------
+    // HOTELS (Public reads, Authenticated writes)
     // ------------------------------------------
     match /hotels/{hotelId} {
       allow read: if true;
       allow write: if isSignedIn();
 
+      // Anyone can read availability, but only signed-in users (admins) can change it.
       match /availability/{availabilityId} {
         allow read: if true;
         allow write: if isSignedIn();
@@ -27,23 +42,14 @@ service cloud.firestore {
     }
 
     // ------------------------------------------
-    // USERS
-    // ------------------------------------------
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
-      
-      match /favorites/{favoriteId} {
-        allow read, write: if isOwner(userId);
-      }
-    }
-
-    // ------------------------------------------
     // BOOKINGS
     // ------------------------------------------
     match /bookings/{bookingId} {
+      // A user can read their own booking.
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Any signed-in user can create a booking.
       allow create: if isSignedIn();
-      // Updates and deletes are disallowed for now to preserve booking history
+      // Updates and deletes are disallowed to preserve booking history.
       allow update, delete: if false;
     }
   }

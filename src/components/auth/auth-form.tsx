@@ -9,7 +9,7 @@ import {
   signInAnonymously,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +17,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { GoogleSignInButton } from './google-signin-button';
 import { Separator } from '../ui/separator';
 import { Loader2 } from 'lucide-react';
+import { createUserProfile } from '@/firebase/firestore/users';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -24,23 +25,27 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [anonymousLoading, setAnonymousLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const title = mode === 'login' ? 'Welcome Back!' : 'Create an Account';
   const description = mode === 'login' ? 'Sign in to continue to your account.' : 'Enter your details to get started.';
   const buttonText = mode === 'login' ? 'Log In' : 'Sign Up';
+  
+  const anyLoading = loading || anonymousLoading || googleLoading;
 
   const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    if (!auth) {
+    if (!auth || !firestore) {
       setError('Authentication service is not available.');
       setLoading(false);
       return;
@@ -54,7 +59,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === 'signup') {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Create user profile document in Firestore
+        await createUserProfile(firestore, userCredential.user);
+
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -97,10 +105,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       </CardHeader>
       <CardContent>
         <div className='flex flex-col gap-4'>
-            <GoogleSignInButton setLoading={setLoading} setError={setError} />
+            <GoogleSignInButton setLoading={setGoogleLoading} setError={setError} disabled={anyLoading} />
 
             {mode === 'login' && (
-                <Button onClick={handleAnonymousSignIn} variant="secondary" className="w-full" disabled={loading || anonymousLoading}>
+                <Button onClick={handleAnonymousSignIn} variant="secondary" className="w-full" disabled={anyLoading}>
                     {anonymousLoading && <Loader2 className="animate-spin" />}
                     {anonymousLoading ? 'Signing in...' : 'Continue as Guest'}
                 </Button>
@@ -122,7 +130,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={loading || anonymousLoading}
+              disabled={anyLoading}
               />
           </div>
           <div className="space-y-2">
@@ -133,11 +141,11 @@ export function AuthForm({ mode }: AuthFormProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              disabled={loading || anonymousLoading}
+              disabled={anyLoading}
               />
           </div>
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading || anonymousLoading}>
+          <Button type="submit" className="w-full" disabled={anyLoading}>
             {loading && <Loader2 className="animate-spin" />}
             {loading ? 'Please wait...' : buttonText}
           </Button>
