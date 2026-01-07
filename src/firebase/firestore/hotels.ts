@@ -33,9 +33,6 @@ export function addHotel(
                     return updateDoc(docRef, { imageUrls })
                         .catch(serverError => {
                             // Catch errors specifically for the updateDoc operation.
-                            console.error("🔴 ORIGINAL ERROR (update):", serverError);
-                            console.error("🔴 ERROR CODE (update):", serverError.code);
-                            console.error("🔴 ERROR MESSAGE (update):", serverError.message);
                             const permissionError = new FirestorePermissionError({
                                 path: docRef.path,
                                 operation: 'update',
@@ -49,9 +46,6 @@ export function addHotel(
         })
         .catch(serverError => {
             // This is the crucial part for catching the initial 'create' permission error.
-            console.error("🔴 ORIGINAL ERROR (create):", serverError); 
-            console.error("🔴 ERROR CODE (create):", serverError.code);
-            console.error("🔴 ERROR MESSAGE (create):", serverError.message);
             const permissionError = new FirestorePermissionError({
                 path: hotelsCollection.path,
                 operation: 'create',
