@@ -6,16 +6,109 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { BedDouble, Calendar, Hotel, Loader2, User } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BedDouble, Calendar, Hotel, Loader2, MessageSquare, Star, User } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
 import { booking } from '@/lib/types';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useFirestore } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { addReview } from '@/firebase/firestore/reviews';
+import { cn } from '@/lib/utils';
 
-function BookingCard({ booking }: { booking: booking }) {
+
+function ReviewDialog({ booking, user }: { booking: booking; user: import('firebase/auth').User }) {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!firestore) return;
+        if (rating === 0) {
+            toast({ variant: 'destructive', title: 'Please select a rating.' });
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            await addReview(firestore, {
+                hotelId: booking.hotelId,
+                userId: user.uid,
+                userName: user.displayName || 'Anonymous',
+                userPhotoUrl: user.photoURL || '',
+                rating,
+                comment,
+            });
+            toast({ title: 'Review Submitted!', description: 'Thank you for your feedback.' });
+            setOpen(false);
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not submit your review.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <MessageSquare className="size-4 mr-2" />
+                    Leave a Review
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Leave a review for {booking.hotelName}</DialogTitle>
+                    <DialogDescription>Share your experience to help other travelers.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label>Your Rating</Label>
+                        <div className="flex items-center gap-1">
+                            {[...Array(5)].map((_, i) => (
+                                <Star
+                                    key={i}
+                                    className={cn('size-8 cursor-pointer transition-colors', i < rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300 hover:text-amber-300')}
+                                    onClick={() => setRating(i + 1)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="comment">Your Comment</Label>
+                        <Textarea
+                            id="comment"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            placeholder="Tell us about your stay..."
+                            rows={4}
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="animate-spin mr-2" />}
+                        {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function BookingCard({ booking, user }: { booking: booking; user: import('firebase/auth').User | null }) {
     const checkinDate = booking.checkin ? format(new Date(booking.checkin), 'PPP') : 'N/A';
     const checkoutDate = booking.checkout ? format(new Date(booking.checkout), 'PPP') : 'N/A';
     const bookedAtDate = booking.bookedAt?.toDate ? format(booking.bookedAt.toDate(), 'PPP, p') : 'N/A';
+
+    const canReview = user && isPast(new Date(booking.checkout));
 
     return (
         <Card className="mb-4 shadow-md hover:shadow-lg transition-shadow">
@@ -42,6 +135,11 @@ function BookingCard({ booking }: { booking: booking }) {
                     Booked on: {bookedAtDate}
                 </div>
             </CardContent>
+            {canReview && (
+                <CardFooter>
+                    <ReviewDialog booking={booking} user={user} />
+                </CardFooter>
+            )}
         </Card>
     )
 }
@@ -99,7 +197,7 @@ function MyBookingsContent() {
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} />
+            <BookingCard key={booking.id} booking={booking} user={user} />
           ))}
         </div>
       )}
