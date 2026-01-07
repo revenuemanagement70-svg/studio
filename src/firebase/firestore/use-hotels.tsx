@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemoFirebase } from '@/firebase/provider';
 import { collection, query, where } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { hotel as Hotel } from '@/lib/types';
@@ -9,7 +9,7 @@ import { useCollection } from './use-collection';
 export function useHotels() {
   const firestore = useFirestore();
 
-  const hotelsQuery = useMemo(() => {
+  const hotelsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     // Query for hotels that are NOT soft-deleted.
     return query(collection(firestore, 'hotels'), where('deleted', '!=', true));
@@ -17,5 +17,5 @@ export function useHotels() {
 
   const { data: hotels, loading, error } = useCollection<Hotel>(hotelsQuery);
 
-  return { hotels, loading, error };
+  return { hotels: hotels ?? [], loading, error };
 }

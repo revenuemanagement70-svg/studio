@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, doc, getDoc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import type { hotel as Hotel } from '@/lib/types';
 import { useCollection } from './use-collection';
 
@@ -15,9 +15,9 @@ export function useFavorites(userId: string | undefined) {
   const firestore = useFirestore();
   const [favorites, setFavorites] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any>(null);
 
-  const favoritesCollectionRef = useMemo(() => {
+  const favoritesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !userId) return null;
     return collection(firestore, 'users', userId, 'favorites');
   }, [firestore, userId]);
