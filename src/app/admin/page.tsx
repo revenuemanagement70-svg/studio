@@ -29,10 +29,11 @@ function RecentBookings() {
   }
 
   if (error) {
-    return <p className="text-destructive text-sm text-center">{error}</p>
+    return <p className="text-destructive text-sm text-center">{error.message}</p>
   }
-
-  if (bookings.length === 0) {
+  
+  // Safely check for bookings after loading and error states are handled.
+  if (!bookings || bookings.length === 0) {
     return <p className="text-muted-foreground text-sm text-center">No recent activity yet.</p>
   }
 
