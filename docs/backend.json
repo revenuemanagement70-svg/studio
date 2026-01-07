@@ -8,7 +8,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user profile."
+          "description": "Unique identifier for the UserProfile entity."
         },
         "email": {
           "type": "string",
@@ -27,14 +27,14 @@
           "type": "string",
           "description": "Phone number of the user."
         },
-        "createdAt": {
+        "dateJoined": {
           "type": "string",
-          "description": "Timestamp indicating when the user profile was created.",
+          "description": "Date and time when the user joined the platform.",
           "format": "date-time"
         },
-        "updatedAt": {
+        "lastLogin": {
           "type": "string",
-          "description": "Timestamp indicating when the user profile was last updated.",
+          "description": "Date and time of the user's last login.",
           "format": "date-time"
         }
       },
@@ -42,9 +42,7 @@
         "id",
         "email",
         "firstName",
-        "lastName",
-        "createdAt",
-        "updatedAt"
+        "lastName"
       ]
     },
     "Hotel": {
@@ -55,7 +53,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the hotel."
+          "description": "Unique identifier for the Hotel entity."
         },
         "name": {
           "type": "string",
@@ -69,6 +67,10 @@
           "type": "string",
           "description": "City where the hotel is located."
         },
+        "state": {
+          "type": "string",
+          "description": "State where the hotel is located."
+        },
         "country": {
           "type": "string",
           "description": "Country where the hotel is located."
@@ -79,29 +81,21 @@
         },
         "rating": {
           "type": "number",
-          "description": "Average rating of the hotel (e.g., 4.5)."
-        },
-        "imageUrls": {
-          "type": "array",
-          "description": "Array of URLs for images of the hotel.",
-          "items": {
-            "type": "string"
-          }
+          "description": "Average rating of the hotel (e.g., 4.5 stars)."
         },
         "amenities": {
           "type": "array",
-          "description": "List of amenities offered by the hotel.",
+          "description": "A list of amenities offered by the hotel.",
           "items": {
             "type": "string"
           }
         },
-        "latitude": {
-          "type": "number",
-          "description": "Latitude coordinate of the hotel's location."
-        },
-        "longitude": {
-          "type": "number",
-          "description": "Longitude coordinate of the hotel's location."
+        "imageUrls": {
+          "type": "array",
+          "description": "URLs of images showcasing the hotel.",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
@@ -109,13 +103,8 @@
         "name",
         "address",
         "city",
-        "country",
-        "description",
-        "rating",
-        "imageUrls",
-        "amenities",
-        "latitude",
-        "longitude"
+        "state",
+        "country"
       ]
     },
     "Booking": {
@@ -126,7 +115,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the booking."
+          "description": "Unique identifier for the Booking entity."
         },
         "userId": {
           "type": "string",
@@ -156,12 +145,12 @@
         },
         "bookingDate": {
           "type": "string",
-          "description": "Date when the booking was made.",
+          "description": "Date and time when the booking was made.",
           "format": "date-time"
         },
-        "cancellationPolicy": {
+        "status": {
           "type": "string",
-          "description": "Cancellation policy applicable to the booking."
+          "description": "Status of the booking (e.g., confirmed, cancelled)."
         }
       },
       "required": [
@@ -173,7 +162,7 @@
         "numberOfGuests",
         "totalPrice",
         "bookingDate",
-        "cancellationPolicy"
+        "status"
       ]
     },
     "Destination": {
@@ -184,7 +173,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the destination."
+          "description": "Unique identifier for the Destination entity."
         },
         "name": {
           "type": "string",
@@ -196,15 +185,11 @@
         },
         "imageUrl": {
           "type": "string",
-          "description": "URL of an image representing the destination."
-        },
-        "averageRating": {
-          "type": "number",
-          "description": "Average rating of the destination based on user reviews."
+          "description": "URL of the image representing the destination."
         },
         "hotelIds": {
           "type": "array",
-          "description": "References to Hotels. (Relationship: Destination N:N Hotel)",
+          "description": "References to Hotels. (Relationship: Destination 1:N Hotel)",
           "items": {
             "type": "string"
           }
@@ -214,9 +199,96 @@
         "id",
         "name",
         "description",
-        "imageUrl",
-        "averageRating",
-        "hotelIds"
+        "imageUrl"
+      ]
+    },
+    "Review": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Review",
+      "type": "object",
+      "description": "Represents a review given by a user for a hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Review entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Review)"
+        },
+        "hotelId": {
+          "type": "string",
+          "description": "Reference to Hotel. (Relationship: Hotel 1:N Review)"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Rating given by the user (e.g., 1 to 5 stars)."
+        },
+        "comment": {
+          "type": "string",
+          "description": "Comment provided by the user as part of the review."
+        },
+        "reviewDate": {
+          "type": "string",
+          "description": "Date and time when the review was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "hotelId",
+        "rating",
+        "comment",
+        "reviewDate"
+      ]
+    },
+    "Offer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Offer",
+      "type": "object",
+      "description": "Represents a promotional offer or discount.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Offer entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the offer (e.g., Flat 30% OFF)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the offer."
+        },
+        "discountPercentage": {
+          "type": "number",
+          "description": "Discount percentage offered."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "Start date of the offer.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "End date of the offer.",
+          "format": "date-time"
+        },
+        "hotelIds": {
+          "type": "array",
+          "description": "References to Hotels. (Relationship: Offer N:N Hotel)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "startDate",
+        "endDate"
       ]
     }
   },
@@ -229,17 +301,17 @@
   "firestore": {
     "structure": [
       {
-        "path": "/users/{userId}",
+        "path": "/userProfiles/{userId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information. Path-based ownership.",
+          "description": "Stores user profile information. The 'userId' is used to identify the user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user (from Firebase Auth)."
+              "description": "The unique identifier for the user."
             }
           ]
         }
@@ -251,31 +323,31 @@
           "schema": {
             "$ref": "#/backend/entities/Hotel"
           },
-          "description": "Stores hotel information. Globally readable, admin-editable.",
+          "description": "Stores hotel information.",
           "params": [
             {
               "name": "hotelId",
-              "description": "The unique identifier of the hotel."
+              "description": "The unique identifier for the hotel."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/bookings/{bookingId}",
+        "path": "/userProfiles/{userId}/bookings/{bookingId}",
         "definition": {
           "entityName": "Booking",
           "schema": {
             "$ref": "#/backend/entities/Booking"
           },
-          "description": "Stores booking information for a user. Path-based ownership.",
+          "description": "Stores booking information for a specific user. 'userId' and 'bookingId' are used to identify the booking.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user (from Firebase Auth)."
+              "description": "The unique identifier for the user who made the booking."
             },
             {
               "name": "bookingId",
-              "description": "The unique identifier of the booking."
+              "description": "The unique identifier for the booking."
             }
           ]
         }
@@ -287,16 +359,52 @@
           "schema": {
             "$ref": "#/backend/entities/Destination"
           },
-          "description": "Stores information about travel destinations. Globally readable, admin-editable.",
+          "description": "Stores destination information.",
           "params": [
             {
               "name": "destinationId",
-              "description": "The unique identifier of the destination."
+              "description": "The unique identifier for the destination."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/userProfiles/{userId}/reviews/{reviewId}",
+        "definition": {
+          "entityName": "Review",
+          "schema": {
+            "$ref": "#/backend/entities/Review"
+          },
+          "description": "Stores review information for a specific user. 'userId' and 'reviewId' are used to identify the review.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who wrote the review."
+            },
+            {
+              "name": "reviewId",
+              "description": "The unique identifier for the review."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/offers/{offerId}",
+        "definition": {
+          "entityName": "Offer",
+          "schema": {
+            "$ref": "#/backend/entities/Offer"
+          },
+          "description": "Stores offer information.",
+          "params": [
+            {
+              "name": "offerId",
+              "description": "The unique identifier for the offer."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability for the Staylo application. It leverages path-based ownership for user profiles and bookings, and a global collection for hotels and destinations. \n\n**Authorization Independence:**\n\n*   User profiles are stored under `/users/{userId}`, ensuring that access control is directly tied to the authenticated user's ID. Bookings are stored under `/users/{userId}/bookings/{bookingId}`, making ownership explicit and rules simple.\n\n*   The absence of `get()` calls in security rules is ensured by avoiding hierarchical authorization dependencies. Instead, each document contains all the necessary information for access control, adhering to Authorization Independence.\n\n**Structural Segregation:**\n\n*   User-specific data (profiles, bookings) is segregated from global data (hotels, destinations). This ensures that different security rules can be applied to each data type without conflicts.\n\n**Access Modeling:**\n\n*   Path-based ownership is used for user profiles and bookings, providing secure and efficient access control. \n\n*   Hotels and Destinations are in a global collection. In this case, hotels are globally read accessible, any admin user can add and edit hotels.\n\n**QAPs (Rules are not Filters):**\n\n*   The separation of user data and global data supports secure `list` operations. Rules can be written to allow users to only list their own profiles or bookings. Global collections can be read by anyone, but only edited by admins. Thus, filtering is never happening at the rule level.\n\n**Invariants:**\n\n*   The structure supports the integrity of ownership by explicitly associating profiles and bookings with user IDs in their respective paths. Timestamps can be enforced using rules to ensure that `createdAt` and `updatedAt` fields are properly set.\n\n**Email Auth and DB Integration:**\n\n*   User profiles are stored in `/users/{userId}`, which is the standard way of integrating Firebase Authentication with Firestore.\n\n**GenAI:**\n\n*   The structure supports the GenAI requirements by providing a clear separation of concerns. The AI can read hotel and destination data, and user's can use the AI to create the destinations."
+    "reasoning": "The Firestore data structure is designed to ensure authorization independence and support the required query capabilities (QAPs) by adhering to the principles of denormalization and structural segregation. User profiles are stored in a dedicated collection (`/userProfiles`) for easy management and access. Hotels and Destinations are stored in their collections, allowing for global listing and searching. Bookings and Reviews are stored as subcollections under the respective user's profile (`/userProfiles/{userId}/bookings` and `/userProfiles/{userId}/reviews`) to ensure clear ownership and simplified security rules based on user ID. Offers are stored in a dedicated collection (`/offers`).\n\n**Authorization Independence:**\n\n*   The structure promotes authorization independence by avoiding hierarchical authorization dependencies. For instance, bookings and reviews are stored under the user's profile, eliminating the need to fetch parent document data for authorization. The `userId` is inherently available in the path.\n\n**QAPs Support:**\n\n*   The structure supports secure `list` operations by segregating data based on ownership and type. Listing bookings or reviews is scoped to the specific user's subcollections, preventing unauthorized access to other users' data.\n\n*   The global collections (`/hotels`, `/destinations`, `/offers`) allow for efficient listing and filtering across all entities without needing to query subcollections, ensuring scalability and performance.\n\nThis design enforces clear data ownership, simplifies security rules, and optimizes query performance, aligning with the core design principles."
   }
 }

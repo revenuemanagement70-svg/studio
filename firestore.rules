@@ -1,21 +1,208 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Allow read and write only if the user is authenticated
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    /**
+     * Core Philosophy: This ruleset implements a hybrid security model. It enforces strict user
+     * ownership for private data while allowing public, read-only access to shared application
+     * data. This provides strong user privacy and supports rapid application development.
+     *
+     * Data Structure: User-specific data (profiles, bookings, reviews) is nested under a
+     * user's unique ID in the `/userProfiles/{userId}` collection. This creates a clear
+     * ownership boundary. Global data (hotels, destinations, offers) is stored in top-level
+     * collections, making it easily queryable by all clients.
+     *
+     * Key Security Decisions:
+     * - User Enumeration is Disallowed: Listing the `/userProfiles` collection is forbidden to
+     *   protect user privacy.
+     * - User Data is Private: A user can only access data within their own document tree
+     *   (e.g., `/userProfiles/{their-own-userId}/...`).
+     * - Public Data is Read-Only: Collections like `/hotels` and `/destinations` are publicly
+     *   readable but cannot be modified by clients. This is a secure default, assuming this
+     *   data is managed by a trusted backend or admin panel.
+     * - Relational Integrity: Rules enforce that the `userId` field within subcollection
+     *   documents (like a booking) must match the `userId` in the document path, ensuring
+     *   data consistency.
+     *
+     * Denormalization for Authorization: The data model is well-structured, placing user-specific
+     * subcollections like `bookings` directly under the user's profile. This allows rules to
+     * authorize access based on the document path (`isOwner(userId)`), which is highly efficient
+     * and avoids slow, costly `get()` calls to other documents.
+     *
+     * Structural Segregation: The design correctly separates private user data (e.g.,
+     * `/userProfiles/{userId}/bookings`) from public, queryable data (e.g., `/hotels`),
+     * which is a best practice for security and performance.
+     */
+
+    /**
+     * @description Manages user profiles. A user can create their own profile, and only they can
+     *              read or update it thereafter. Listing all users is prohibited.
+     * @path /userProfiles/{userId}
+     * @allow (create) An authenticated user creating their own profile document, where the
+     *          document ID matches their UID. e.g., `auth.uid == 'user123'`, path is `/userProfiles/user123`.
+     * @deny (get) User 'user456' trying to read the profile of 'user123'.
+     * @principle Restricts access to a user's own data tree and allows for self-creation of a root profile document.
+     */
+    match /userProfiles/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow user enumeration for security and privacy.
+      allow create: if isOwner(userId) && isUserProfileDataConsistentOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isUserProfileDataConsistentOnUpdate();
+      allow delete: if isExistingOwner(userId);
     }
 
-    // Allow users to read and write only their own data (for example, their own bookings)
-    match /users/{userId} {
-      allow read, write: if request.auth.uid == userId;
+    /**
+     * @description Manages bookings, which are stored as a subcollection under the user who
+     *              created them. Only the owner can manage their own bookings.
+     * @path /userProfiles/{userId}/bookings/{bookingId}
+     * @allow (create, get, list, update, delete) User 'user123' managing a booking within their own
+     *          subcollection at `/userProfiles/user123/bookings/{bookingId}`.
+     * @deny (get) User 'user456' trying to read a booking from `/userProfiles/user123/bookings/{bookingId}`.
+     * @principle Enforces strict document ownership within a user's private subcollection.
+     */
+    match /userProfiles/{userId}/bookings/{bookingId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isBookingDataConsistentOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isBookingDataConsistentOnUpdate();
+      allow delete: if isExistingOwner(userId);
     }
 
-    // Allow users to read and write their own bookings
-    match /bookings/{bookingId} {
-      allow read, write: if request.auth.uid == resource.data.userId;
+    /**
+     * @description Manages reviews, which are stored as a subcollection under the user who
+     *              wrote them. Only the owner can manage their own reviews.
+     * @path /userProfiles/{userId}/reviews/{reviewId}
+     * @allow (create, get, list, update, delete) User 'user123' managing a review within their own
+     *          subcollection at `/userProfiles/user123/reviews/{reviewId}`.
+     * @deny (get) User 'user456' trying to read a review from `/userProfiles/user123/reviews/{reviewId}`.
+     * @principle Enforces strict document ownership within a user's private subcollection.
+     */
+    match /userProfiles/{userId}/reviews/{reviewId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isReviewDataConsistentOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isReviewDataConsistentOnUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Provides public, read-only access to hotel information. All write
+     *              operations are denied from the client-side.
+     * @path /hotels/{hotelId}
+     * @allow (get, list) Any user, signed-in or not, can read hotel data.
+     * @deny (create, update, delete) Any user trying to modify hotel data. This must be done by a trusted server environment.
+     * @principle Secures public data by making it read-only for clients.
+     */
+    match /hotels/{hotelId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Provides public, read-only access to destination information. All write
+     *              operations are denied from the client-side.
+     * @path /destinations/{destinationId}
+     * @allow (get, list) Any user, signed-in or not, can read destination data.
+     * @deny (create, update, delete) Any user trying to modify destination data.
+     * @principle Secures public data by making it read-only for clients.
+     */
+    match /destinations/{destinationId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Provides public, read-only access to promotional offers. All write
+     *              operations are denied from the client-side.
+     * @path /offers/{offerId}
+     * @allow (get, list) Any user, signed-in or not, can read offer data.
+     * @deny (create, update, delete) Any user trying to modify offer data.
+     * @principle Secures public data by making it read-only for clients.
+     */
+    match /offers/{offerId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // --------------------------------------------------------------------
+    // Helper Functions
+    // --------------------------------------------------------------------
+
+    /**
+     * Returns true if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the requesting user's UID matches the provided userId.
+     * This is the core function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if the user is the owner AND the document already exists.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that the UserProfile being created has an 'id' field
+     * matching the document's path userId.
+     */
+    function isUserProfileDataConsistentOnCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Validates that the 'id' field of a UserProfile is immutable upon update.
+     */
+    function isUserProfileDataConsistentOnUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates that the Booking being created has a 'userId' field
+     * matching the document's path userId.
+     */
+    function isBookingDataConsistentOnCreate(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Validates that the 'userId' field of a Booking is immutable upon update.
+     */
+    function isBookingDataConsistentOnUpdate() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+    /**
+     * Validates that the Review being created has a 'userId' field
+     * matching the document's path userId.
+     */
+    function isReviewDataConsistentOnCreate(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Validates that the 'userId' field of a Review is immutable upon update.
+     */
+    function isReviewDataConsistentOnUpdate() {
+      return request.resource.data.userId == resource.data.userId;
     }
   }
 }
