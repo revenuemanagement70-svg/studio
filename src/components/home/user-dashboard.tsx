@@ -3,7 +3,7 @@
 import { User } from "firebase/auth";
 import Link from "next/link";
 import { SearchSection } from "./search-section";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardHeader, CardTitle } from "../ui/card";
 import { BedDouble, Heart, Star } from "lucide-react";
 import { useFavorites } from "@/firebase/firestore/use-favorites";
 import { HotelCardSkeleton } from "../results/hotel-card-skeleton";
