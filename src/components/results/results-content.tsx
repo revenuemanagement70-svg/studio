@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { HotelCard } from '@/components/results/hotel-card';
@@ -20,27 +20,21 @@ interface ResultsContentProps {
 
 export function ResultsContent({ destination, checkin, checkout, guests, budget, travelStyle }: ResultsContentProps) {
   const { hotels, loading, error } = useHotels();
-  const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
 
-  useEffect(() => {
-    // This effect runs whenever the full list of hotels is loaded or the destination changes.
-    if (loading) {
-      // If hotels are still loading, do nothing and wait.
-      return;
+  const filteredHotels = useMemo(() => {
+    if (!hotels) {
+      return [];
     }
 
     if (destination) {
-      // If a destination is provided, filter the hotels.
       const destinationLower = destination.toLowerCase();
-      const results = hotels.filter(hotel => 
+      return hotels.filter(hotel => 
         hotel.city.toLowerCase() === destinationLower
       );
-      setFilteredHotels(results);
-    } else {
-      // If NO destination is provided, show ALL hotels.
-      setFilteredHotels(hotels);
     }
-  }, [loading, hotels, destination]);
+    
+    return hotels;
+  }, [hotels, destination]);
 
   const getSubheading = () => {
     const parts = [];
@@ -77,7 +71,7 @@ export function ResultsContent({ destination, checkin, checkout, guests, budget,
 
       {error && !loading && (
         <div className="text-center py-16 bg-white rounded-lg shadow">
-          <p className="text-destructive font-semibold">{error}</p>
+          <p className="text-destructive font-semibold">{error instanceof Error ? error.message : "An unknown error occurred"}</p>
         </div>
       )}
 
