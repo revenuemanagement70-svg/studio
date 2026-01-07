@@ -17,7 +17,7 @@ export function useBookings() {
 
   const { data: bookings, loading, error } = useCollection<booking>(bookingsQuery);
 
-  return { bookings: bookings ?? [], loading, error };
+  return { bookings, loading, error };
 }
 
 export async function getBookingById(db: Firestore, bookingId: string): Promise<booking | null> {

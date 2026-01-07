@@ -17,5 +17,5 @@ export function useMyBookings(userId?: string) {
 
   const { data: bookings, isLoading, error } = useCollection<booking>(bookingsQuery);
 
-  return { bookings: bookings ?? [], isLoading, error };
+  return { bookings, isLoading, error };
 }

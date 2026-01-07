@@ -17,5 +17,5 @@ export function useHotels() {
 
   const { data: hotels, loading, error } = useCollection<Hotel>(hotelsQuery);
 
-  return { hotels: hotels ?? [], loading, error };
+  return { hotels, loading, error };
 }
