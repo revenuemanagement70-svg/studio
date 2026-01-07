@@ -1,57 +1,129 @@
-
+/**
+ * Core Philosophy: This ruleset enforces a strict security model with two primary zones.
+ * 1. Private User Zone: All data specific to a user, such as their profile and bookings,
+ *    is stored in a user-owned document tree under /users/{userId}. Access is strictly
+ *    limited to the authenticated owner of that data.
+ * 2. Public Content Zone: Global data, such as hotels and destinations, is stored in
+ *    top-level collections. This data is publicly readable by any client to allow for
+ *    browsing, but write access is restricted to prevent unauthorized modifications.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores a user's profile.
+ * - /users/{userId}/bookings/{bookingId}: A subcollection for a user's bookings.
+ * - /hotels/{hotelId}: A global collection of hotel listings.
+ * - /destinations/{destinationId}: A global collection of travel destinations.
+ *
+ * Key Security Decisions:
+ * - User Enumeration Disabled: Listing the top-level `/users` collection is explicitly
+ *   disallowed to protect user privacy.
+ * - Strict Ownership: A user can only read or write data within their own
+ *   `/users/{userId}` path. They cannot access another user's information.
+ * - Public Read, Locked Writes: Global collections (`hotels`, `destinations`) are
+ *   readable by everyone, including unauthenticated users, to populate the app's UI.
+ *   Writes to these collections are currently disabled pending the implementation of
+ *   a secure admin role system.
+ * - Path and Data Consistency: Rules enforce that the `userId` in a document's path
+ *   matches the `userId` field within the document itself, ensuring relational integrity.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: Check if user is signed in
+    // Helper functions for improved readability and reusability.
+
+    /**
+     * Checks if the user is authenticated.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper: Check if user is the admin (requires custom claim or specific UID)
-    function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * @param userId The UID to check against the authenticated user's UID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // ------------------------------------------
-    // DRAFTS (No longer in use, but keeping for reference)
-    // ------------------------------------------
-    match /hotels_draft/{draftId} {
-      allow read, create, update: if isSignedIn();
-      allow delete: if isAdmin();
+    /**
+     * Checks for ownership and ensures the document already exists.
+     * Critical for safe update and delete operations.
+     * @param userId The UID to check against the authenticated user's UID.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
     }
 
-    // ------------------------------------------
-    // LIVE HOTELS (Temporarily open for debugging)
-    // ------------------------------------------
-    match /hotels/{hotelId} {
-      allow read: if true;
-      // Temporarily allowing any signed-in user to write.
-      allow write: if isSignedIn();
-
-      match /availability/{availabilityId} {
-        allow read: if true;
-        allow write: if isSignedIn();
-      }
-    }
-
-    // ------------------------------------------
-    // USERS
-    // ------------------------------------------
+    /**
+     * @description Secures the UserProfile documents. A user can create their own profile,
+     *              and can only read, update, or delete their own profile. Listing all
+     *              users is forbidden to protect privacy.
+     * @path /users/{userId}
+     * @allow (create) a new user with uid 'user_abc' creating their own profile at /users/user_abc.
+     * @deny (get) user 'user_123' trying to read the profile at /users/user_xyz.
+     * @principle Restricts access to a user's own data tree and enables self-creation of a profile.
+     */
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      match /favorites/{favoriteId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Secures the bookings for a specific user. Only the user who owns
+       *              the parent profile can read, list, and manage their bookings.
+       * @path /users/{userId}/bookings/{bookingId}
+       * @allow (create) user 'user_abc' creating a new booking in their own subcollection.
+       * @deny (list) user 'user_123' trying to list bookings for 'user_xyz'.
+       * @principle Enforces hierarchical ownership based on the parent document path.
+       */
+      match /bookings/{bookingId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
       }
     }
 
-    // ------------------------------------------
-    // BOOKINGS
-    // ------------------------------------------
-    match /bookings/{bookingId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn();
-      allow update, delete: if false;
+    /**
+     * @description Defines access for the global collection of hotels. This data is
+     *              publicly readable for all users, including anonymous ones, to
+     *              browse listings. Writes are currently disabled.
+     * @path /hotels/{hotelId}
+     * @allow (get) any unauthenticated user reading a hotel document.
+     * @deny (create) any authenticated user trying to add a new hotel.
+     * @principle Provides public read access for global data while securing write operations.
+     */
+    match /hotels/{hotelId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Write access is disabled. The 'Hotel' entity has no owner/admin field.
+      // An admin verification system (e.g., based on custom claims) is needed to allow secure writes.
+      allow create: if false; // TODO: Implement admin-only creation logic.
+      allow update: if false; // TODO: Implement admin-only update logic.
+      allow delete: if false; // TODO: Implement admin-only delete logic.
+    }
+
+    /**
+     * @description Defines access for the global collection of destinations. This data
+     *              is publicly readable for all users, including anonymous ones.
+     *              Writes are currently disabled.
+     * @path /destinations/{destinationId}
+     * @allow (list) any unauthenticated user listing all destinations.
+     * @deny (update) any authenticated user trying to modify a destination.
+     * @principle Provides public read access for global data while securing write operations.
+     */
+    match /destinations/{destinationId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Write access is disabled. The 'Destination' entity has no owner/admin field.
+      // An admin verification system (e.g., based on custom claims) is needed to allow secure writes.
+      allow create: if false; // TODO: Implement admin-only creation logic.
+      allow update: if false; // TODO: Implement admin-only update logic.
+      allow delete: if false; // TODO: Implement admin-only delete logic.
     }
   }
 }

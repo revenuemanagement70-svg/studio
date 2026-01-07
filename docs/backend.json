@@ -1,240 +1,302 @@
 {
   "entities": {
-    "user": {
-      "title": "User",
-      "description": "A user of the application.",
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
       "type": "object",
-      "properties": {
-        "uid": {
-          "type": "string",
-          "description": "The user's unique ID."
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "The user's email address."
-        },
-        "displayName": {
-          "type": "string",
-          "description": "The user's display name."
-        },
-        "photoURL": {
-          "type": "string",
-          "format": "uri",
-          "description": "The URL of the user's profile picture."
-        }
-      },
-      "required": ["uid", "email"]
-    },
-    "hotel": {
-      "title": "Hotel",
-      "description": "A hotel property listed on the platform.",
-      "type": "object",
+      "description": "Represents a user profile in the Staylo application.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "The unique ID of the hotel."
+          "description": "Unique identifier for the user profile."
         },
-        "name": {
+        "email": {
           "type": "string",
-          "description": "The name of the hotel."
+          "description": "Email address of the user.",
+          "format": "email"
         },
-        "streetAddress": {
-            "type": "string",
-            "description": "The street address of the hotel."
-        },
-        "city": {
-            "type": "string",
-            "description": "The city where the hotel is located."
-        },
-        "price": {
-          "type": "number",
-          "description": "The price per night of the hotel."
-        },
-        "rating": {
-          "type": "number",
-          "description": "The rating of the hotel (out of 5)."
-        },
-        "amenities": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The list of amenities offered by the hotel."
-        },
-        "description": {
+        "firstName": {
           "type": "string",
-          "description": "A short description of the hotel."
+          "description": "First name of the user."
         },
-        "imageUrls": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
-          "description": "A list of URLs for the hotel's photos."
-        },
-        "latitude": {
-            "type": "number",
-            "description": "The latitude of the hotel's location."
-        },
-        "longitude": {
-            "type": "number",
-            "description": "The longitude of the hotel's location."
-        },
-        "managerName": {
-            "type": "string",
-            "description": "The name of the hotel manager."
-        },
-        "contactEmail": {
-            "type": "string",
-            "format": "email",
-            "description": "The contact email address for the hotel."
-        },
-        "contactPhone": {
-            "type": "string",
-            "description": "The contact phone number for the hotel."
-        },
-        "taxRate": {
-            "type": "number",
-            "description": "The tax rate percentage for the hotel."
-        },
-        "commissionRate": {
-            "type": "number",
-            "description": "The commission rate percentage for the hotel."
-        }
-      },
-      "required": ["name", "streetAddress", "city", "price", "rating", "description", "imageUrls", "latitude", "longitude"]
-    },
-    "favoriteHotel": {
-      "title": "Favorite Hotel Reference",
-      "description": "A reference to a hotel that a user has saved as a favorite.",
-      "type": "object",
-      "properties": {
-        "hotelId": {
+        "lastName": {
           "type": "string",
-          "description": "The ID of the favorited hotel document in the /hotels collection."
-        }
-      },
-      "required": ["hotelId"]
-    },
-    "booking": {
-      "title": "Booking",
-      "description": "A record of a hotel booking made by a user.",
-      "type": "object",
-      "properties": {
-        "bookingId": {
+          "description": "Last name of the user."
+        },
+        "phoneNumber": {
           "type": "string",
-          "description": "The unique 7-character ID for the booking, starting with 'Sty'."
+          "description": "Phone number of the user."
         },
-        "hotelId": {
+        "createdAt": {
           "type": "string",
-          "description": "The ID of the booked hotel."
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
         },
-        "hotelName": {
+        "updatedAt": {
           "type": "string",
-          "description": "The name of the booked hotel."
-        },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the user who made the booking."
-        },
-        "userName": {
-          "type": "string",
-          "description": "The name of the user who made the booking."
-        },
-        "userEmail": {
-          "type": "string",
-          "format": "email",
-          "description": "The email of the user who made the booking."
-        },
-        "checkin": {
-          "type": "string",
-          "format": "date",
-          "description": "The check-in date."
-        },
-        "checkout": {
-          "type": "string",
-          "format": "date",
-          "description": "The check-out date."
-        },
-        "guests": {
-          "type": "number",
-          "description": "The number of guests."
-        },
-        "totalPrice": {
-          "type": "number",
-          "description": "The total price of the booking."
-        },
-        "bookedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the booking was made."
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
         }
       },
       "required": [
-        "bookingId",
-        "hotelId",
-        "hotelName",
-        "userId",
-        "userName",
-        "userEmail",
-        "checkin",
-        "checkout",
-        "guests",
-        "totalPrice",
-        "bookedAt"
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "createdAt",
+        "updatedAt"
       ]
     },
-    "roomAvailability": {
-        "title": "Room Availability",
-        "description": "Defines the pricing and number of available rooms for a specific date.",
-        "type": "object",
-        "properties": {
-            "date": {
-                "type": "string",
-                "format": "date",
-                "description": "The specific date for this availability entry (YYYY-MM-DD)."
-            },
-            "price": {
-                "type": "number",
-                "description": "The price for a room on this specific date."
-            },
-            "roomsAvailable": {
-                "type": "number",
-                "description": "The number of rooms available for booking on this date."
-            }
+    "Hotel": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Hotel",
+      "type": "object",
+      "description": "Represents a hotel listed on the Staylo platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the hotel."
         },
-        "required": ["date", "price", "roomsAvailable"]
+        "name": {
+          "type": "string",
+          "description": "Name of the hotel."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the hotel."
+        },
+        "city": {
+          "type": "string",
+          "description": "City where the hotel is located."
+        },
+        "country": {
+          "type": "string",
+          "description": "Country where the hotel is located."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the hotel."
+        },
+        "rating": {
+          "type": "number",
+          "description": "Average rating of the hotel (e.g., 4.5)."
+        },
+        "imageUrls": {
+          "type": "array",
+          "description": "Array of URLs for images of the hotel.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "amenities": {
+          "type": "array",
+          "description": "List of amenities offered by the hotel.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate of the hotel's location."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate of the hotel's location."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "city",
+        "country",
+        "description",
+        "rating",
+        "imageUrls",
+        "amenities",
+        "latitude",
+        "longitude"
+      ]
+    },
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a booking made by a user for a hotel.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the booking."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Booking)"
+        },
+        "hotelId": {
+          "type": "string",
+          "description": "Reference to Hotel. (Relationship: Hotel 1:N Booking)"
+        },
+        "checkInDate": {
+          "type": "string",
+          "description": "Check-in date for the booking.",
+          "format": "date-time"
+        },
+        "checkOutDate": {
+          "type": "string",
+          "description": "Check-out date for the booking.",
+          "format": "date-time"
+        },
+        "numberOfGuests": {
+          "type": "number",
+          "description": "Number of guests for the booking."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price of the booking."
+        },
+        "bookingDate": {
+          "type": "string",
+          "description": "Date when the booking was made.",
+          "format": "date-time"
+        },
+        "cancellationPolicy": {
+          "type": "string",
+          "description": "Cancellation policy applicable to the booking."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "hotelId",
+        "checkInDate",
+        "checkOutDate",
+        "numberOfGuests",
+        "totalPrice",
+        "bookingDate",
+        "cancellationPolicy"
+      ]
+    },
+    "Destination": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Destination",
+      "type": "object",
+      "description": "Represents a travel destination.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the destination."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the destination (e.g., Delhi, Mumbai)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the destination."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of an image representing the destination."
+        },
+        "averageRating": {
+          "type": "number",
+          "description": "Average rating of the destination based on user reviews."
+        },
+        "hotelIds": {
+          "type": "array",
+          "description": "References to Hotels. (Relationship: Destination N:N Hotel)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "imageUrl",
+        "averageRating",
+        "hotelIds"
+      ]
     }
   },
   "auth": {
-    "providers": ["anonymous", "google.com", "password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/hotels/{hotelId}": {
-      "schema": {
-        "$ref": "#/entities/hotel"
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user (from Firebase Auth)."
+            }
+          ]
+        }
       },
-      "description": "A list of all hotel properties."
-    },
-    "/hotels/{hotelId}/availability/{availabilityId}": {
-        "schema": {
-            "$ref": "#/entities/roomAvailability"
-        },
-        "description": "Availability and pricing information for a specific hotel on a specific date."
-    },
-    "/users/{userId}/favorites/{favoriteId}": {
-      "schema": {
-        "$ref": "#/entities/favoriteHotel"
+      {
+        "path": "/hotels/{hotelId}",
+        "definition": {
+          "entityName": "Hotel",
+          "schema": {
+            "$ref": "#/backend/entities/Hotel"
+          },
+          "description": "Stores hotel information. Globally readable, admin-editable.",
+          "params": [
+            {
+              "name": "hotelId",
+              "description": "The unique identifier of the hotel."
+            }
+          ]
+        }
       },
-      "description": "A user's list of favorite hotel references."
-    },
-    "/bookings/{bookingId}": {
-      "schema": {
-        "$ref": "#/entities/booking"
+      {
+        "path": "/users/{userId}/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Stores booking information for a user. Path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user (from Firebase Auth)."
+            },
+            {
+              "name": "bookingId",
+              "description": "The unique identifier of the booking."
+            }
+          ]
+        }
       },
-      "description": "A collection of all bookings made on the platform."
-    }
+      {
+        "path": "/destinations/{destinationId}",
+        "definition": {
+          "entityName": "Destination",
+          "schema": {
+            "$ref": "#/backend/entities/Destination"
+          },
+          "description": "Stores information about travel destinations. Globally readable, admin-editable.",
+          "params": [
+            {
+              "name": "destinationId",
+              "description": "The unique identifier of the destination."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to prioritize authorization independence, clarity, and scalability for the Staylo application. It leverages path-based ownership for user profiles and bookings, and a global collection for hotels and destinations. \n\n**Authorization Independence:**\n\n*   User profiles are stored under `/users/{userId}`, ensuring that access control is directly tied to the authenticated user's ID. Bookings are stored under `/users/{userId}/bookings/{bookingId}`, making ownership explicit and rules simple.\n\n*   The absence of `get()` calls in security rules is ensured by avoiding hierarchical authorization dependencies. Instead, each document contains all the necessary information for access control, adhering to Authorization Independence.\n\n**Structural Segregation:**\n\n*   User-specific data (profiles, bookings) is segregated from global data (hotels, destinations). This ensures that different security rules can be applied to each data type without conflicts.\n\n**Access Modeling:**\n\n*   Path-based ownership is used for user profiles and bookings, providing secure and efficient access control. \n\n*   Hotels and Destinations are in a global collection. In this case, hotels are globally read accessible, any admin user can add and edit hotels.\n\n**QAPs (Rules are not Filters):**\n\n*   The separation of user data and global data supports secure `list` operations. Rules can be written to allow users to only list their own profiles or bookings. Global collections can be read by anyone, but only edited by admins. Thus, filtering is never happening at the rule level.\n\n**Invariants:**\n\n*   The structure supports the integrity of ownership by explicitly associating profiles and bookings with user IDs in their respective paths. Timestamps can be enforced using rules to ensure that `createdAt` and `updatedAt` fields are properly set.\n\n**Email Auth and DB Integration:**\n\n*   User profiles are stored in `/users/{userId}`, which is the standard way of integrating Firebase Authentication with Firestore.\n\n**GenAI:**\n\n*   The structure supports the GenAI requirements by providing a clear separation of concerns. The AI can read hotel and destination data, and user's can use the AI to create the destinations."
   }
 }
