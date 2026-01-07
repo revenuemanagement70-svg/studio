@@ -66,7 +66,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      router.push('/admin');
+      router.push('/');
 
     } catch (err: any) {
       const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';

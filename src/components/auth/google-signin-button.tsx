@@ -44,7 +44,7 @@ export function GoogleSignInButton({ setLoading, setError, disabled, loading }: 
       const userCredential = await signInWithPopup(auth, provider);
       // Create user profile document in Firestore if it doesn't exist
       await createUserProfile(firestore, userCredential.user);
-      router.push('/admin');
+      router.push('/');
     } catch (err: any) {
       const friendlyError = err.code?.replace('auth/', '').replace(/-/g, ' ') || 'An error occurred.';
       setError(friendlyError.charAt(0).toUpperCase() + friendlyError.slice(1));
