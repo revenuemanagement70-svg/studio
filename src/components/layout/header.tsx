@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Star, Map, Tags, Phone, LogOut, Heart, Building } from 'lucide-react';
+import { Menu, X, Home, Star, Map, Tags, Phone, LogOut, Heart, Building, BedDouble } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ const navLinks = [
 export function Header() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const { user, loading } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -69,12 +69,20 @@ export function Header() {
               </li>
             ))}
              {user && (
-              <li>
-                <Link href="/favorites" className="flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors">
-                  <Heart className="size-4" />
-                  My Favorites
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link href="/my-bookings" className="flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors">
+                    <BedDouble className="size-4" />
+                    My Bookings
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/favorites" className="flex items-center gap-1.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors">
+                    <Heart className="size-4" />
+                    My Favorites
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
         </nav>
@@ -88,7 +96,7 @@ export function Header() {
                 </Link>
             </Button>
             <Separator orientation="vertical" className="h-6" />
-            {loading ? null : user ? (
+            {isUserLoading ? null : user ? (
                <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => router.push('/admin')}>Admin</Button>
                 <Button onClick={handleLogout} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary rounded-md">
@@ -138,12 +146,20 @@ export function Header() {
                             </li>
                         ))}
                         {user && (
+                          <>
+                            <li>
+                                <Link href="/my-bookings" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
+                                    <BedDouble className="size-5" />
+                                    My Bookings
+                                </Link>
+                            </li>
                             <li>
                                 <Link href="/favorites" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
                                     <Heart className="size-5" />
                                     My Favorites
                                 </Link>
                             </li>
+                          </>
                         )}
                         <li>
                             <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-lg font-semibold text-foreground hover:text-primary transition-colors">
@@ -154,7 +170,7 @@ export function Header() {
                         </ul>
                     </nav>
                     <div className="mt-auto border-t pt-6 flex flex-col gap-4">
-                      {loading ? null : user ? (
+                      {isUserLoading ? null : user ? (
                         <Button onClick={handleLogout} variant="outline" className="w-full border-primary text-primary rounded-md">
                           <LogOut className="size-4 mr-2" />
                           Logout

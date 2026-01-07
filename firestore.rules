@@ -8,6 +8,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Helper: Check if the user is the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
     // ------------------------------------------
     // HOTELS (Authenticated writes, Public reads)
     // ------------------------------------------
@@ -25,9 +30,10 @@ service cloud.firestore {
     // USERS
     // ------------------------------------------
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
+      
       match /favorites/{favoriteId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
       }
     }
 
@@ -37,6 +43,7 @@ service cloud.firestore {
     match /bookings/{bookingId} {
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn();
+      // Updates and deletes are disallowed for now to preserve booking history
       allow update, delete: if false;
     }
   }
