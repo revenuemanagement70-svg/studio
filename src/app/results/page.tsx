@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ResultsContent } from '@/components/results/results-content';
 import { HotelCardSkeleton } from '@/components/results/hotel-card-skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function ResultsPage() {
   const searchParams = useSearchParams();
@@ -13,9 +14,7 @@ function ResultsPage() {
   const checkin = searchParams.get('checkin') || '';
   const checkout = searchParams.get('checkout') || '';
   const guests = searchParams.get('guests') || '1';
-  const budget = searchParams.get('budget') || '';
-  const travelStyle = searchParams.get('travelStyle') || '';
-
+  
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
       <Header />
@@ -25,8 +24,6 @@ function ResultsPage() {
           checkin={checkin}
           checkout={checkout}
           guests={guests}
-          budget={budget}
-          travelStyle={travelStyle}
         />
       </main>
       <Footer />
@@ -51,13 +48,18 @@ function LoadingState() {
             <main className="flex-grow pt-24 pb-12">
                 <div className="container mx-auto px-5">
                      <div className="animate-pulse">
-                        <div className="h-5 w-40 bg-gray-300 rounded mb-6"></div>
+                        <Skeleton className="h-5 w-40 bg-gray-300 rounded mb-6" />
                         <div className="h-8 bg-gray-300 rounded w-1/2 mb-2"></div>
                         <div className="h-4 bg-gray-300 rounded w-1/3 mb-8"></div>
-                        <div className="grid grid-cols-1 gap-4">
-                            {[...Array(3)].map((_, i) => (
-                                <HotelCardSkeleton key={i} />
-                            ))}
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            <aside className="lg:col-span-1">
+                                <Skeleton className="h-96 w-full rounded-lg" />
+                            </aside>
+                            <main className="lg:col-span-3 space-y-4">
+                                {[...Array(3)].map((_, i) => (
+                                    <HotelCardSkeleton key={i} />
+                                ))}
+                            </main>
                         </div>
                     </div>
                 </div>
