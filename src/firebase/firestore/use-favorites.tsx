@@ -27,6 +27,7 @@ export function useFavorites(userId: string | undefined) {
   useEffect(() => {
     if (favoriteRefsError) {
       setError(favoriteRefsError);
+      setFavorites([]);
       setLoading(false);
       return;
     }
@@ -43,26 +44,33 @@ export function useFavorites(userId: string | undefined) {
     }
 
     const fetchFavoriteHotels = async () => {
+        if (favoriteRefs.length === 0) {
+            setFavorites([]);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
-          const favoriteHotels = await Promise.all(
-            favoriteRefs.map(async (fav) => {
+          const favoriteHotelPromises = favoriteRefs.map(async (fav) => {
               if (!firestore) return null;
-              // The document ID of the favorite is the hotelId
               const hotelDocRef = doc(firestore, 'hotels', fav.id);
               const hotelDoc = await getDoc(hotelDocRef);
-              if (hotelDoc.exists()) {
+              if (hotelDoc.exists() && !hotelDoc.data().deleted) {
                 return { id: hotelDoc.id, ...hotelDoc.data() } as Hotel;
               }
               return null;
-            })
-          );
+          });
+
+          const favoriteHotels = (await Promise.all(favoriteHotelPromises))
+              .filter((h): h is Hotel => h !== null);
           
-          setFavorites(favoriteHotels.filter((h): h is Hotel => h !== null && !h.deleted));
+          setFavorites(favoriteHotels);
           setError(null);
         } catch (err) {
            console.error("Error fetching favorite hotel details:", err);
            setError("Could not load favorite hotels.");
+           setFavorites([]);
         } finally {
             setLoading(false);
         }
@@ -70,7 +78,7 @@ export function useFavorites(userId: string | undefined) {
     
     fetchFavoriteHotels();
 
-  }, [favoriteRefs, favoriteRefsLoading, favoriteRefsError, firestore]);
+  }, [favoriteRefs, firestore, favoriteRefsError, favoriteRefsLoading]);
 
   return { favorites, loading, error };
 }
