@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { collection, query, orderBy, getDoc, doc, Firestore } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useState, useEffect } from 'react';
+import { collection, query, getDoc, doc, Firestore } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import type { booking } from '@/lib/types';
 import { errorEmitter } from '../error-emitter';
 import { FirestorePermissionError } from '../errors';
@@ -11,9 +11,9 @@ import { useCollection } from './use-collection';
 export function useBookings() {
   const firestore = useFirestore();
 
-  const bookingsQuery = useMemo(() => {
+  const bookingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'bookings'), orderBy('bookedAt', 'desc'));
+    return query(collection(firestore, 'bookings'));
   }, [firestore]);
 
   const { data: bookings, loading, error } = useCollection<booking>(bookingsQuery);
