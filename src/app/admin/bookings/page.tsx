@@ -64,7 +64,7 @@ function BookingsList() {
     }
 
     if (error) {
-        return <p className="text-destructive text-center py-8">{error}</p>;
+        return <p className="text-destructive text-center py-8">{error.message}</p>;
     }
 
     if (bookings.length === 0) {

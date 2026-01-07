@@ -28,7 +28,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useCollection } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -313,9 +313,9 @@ function ReviewsSection({ hotelId }: { hotelId: string }) {
         return query(collection(firestore, `hotels/${hotelId}/reviews`), orderBy('createdAt', 'desc'));
     }, [firestore, hotelId]);
 
-    const { data: reviews, loading, error } = useCollection<Review>(reviewsQuery);
+    const { data: reviews, isLoading, error } = useCollection<Review>(reviewsQuery);
 
-    if (loading) {
+    if (isLoading) {
         return (
              <div className="space-y-4">
                 <Skeleton className="h-20 w-full" />

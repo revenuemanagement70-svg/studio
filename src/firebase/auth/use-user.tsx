@@ -3,32 +3,32 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase/provider';
 
 export const useUser = () => {
   const auth = useAuth();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isUserLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
     if (!auth) {
-      setLoading(false);
+      setUserLoading(false);
       return;
     }
     const unsubscribe = onAuthStateChanged(
       auth,
       (user) => {
         setUser(user);
-        setLoading(false);
+        setUserLoading(false);
       },
       (error) => {
         console.error('Auth state change error', error);
-        setLoading(false);
+        setUserLoading(false);
       }
     );
 
     return () => unsubscribe();
   }, [auth]);
 
-  return { user, loading };
+  return { user, isUserLoading };
 };

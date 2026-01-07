@@ -46,7 +46,7 @@ export function useFavorites(userId: string | undefined) {
     return collection(firestore, 'users', userId, 'favorites');
   }, [firestore, userId]);
   
-  const { data: favoriteRefs, loading: favoriteRefsLoading, error: favoriteRefsError } = useCollection<FavoriteRef>(favoritesCollectionRef);
+  const { data: favoriteRefs, isLoading: favoriteRefsLoading, error: favoriteRefsError } = useCollection<FavoriteRef>(favoritesCollectionRef);
 
   useEffect(() => {
     if (!firestore) return;
