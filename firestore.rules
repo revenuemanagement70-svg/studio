@@ -24,15 +24,15 @@ service cloud.firestore {
     }
 
     // ------------------------------------------
-    // LIVE HOTELS (Admin writes, Public reads)
+    // LIVE HOTELS (Signed-in users write, Public reads)
     // ------------------------------------------
     match /hotels/{hotelId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isSignedIn();
 
       match /availability/{availabilityId} {
         allow read: if true;
-        allow write: if isAdmin();
+        allow write: if isSignedIn();
       }
     }
 
