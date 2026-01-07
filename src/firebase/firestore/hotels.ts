@@ -14,7 +14,7 @@ async function uploadImages(storage: FirebaseStorage, hotelId: string, files: Fi
     return Promise.all(uploadPromises);
 }
 
-export async function addHotel(
+export function addHotel(
     db: Firestore, 
     storage: FirebaseStorage,
     hotel: Omit<Hotel, 'id' | 'imageUrls'>,
@@ -22,40 +22,38 @@ export async function addHotel(
 ) {
     const hotelsCollection = collection(db, 'hotels');
     
-    // Create the document, then chain promises to handle success (image upload) or failure (permission error).
+    // Return the promise chain
     return addDoc(hotelsCollection, { ...hotel, imageUrls: [] })
-        .then(async (docRef) => {
-            // This part runs only if addDoc is successful.
-            const hotelId = docRef.id;
-            
-            // Upload images using the new hotel's ID.
-            const imageUrls = await uploadImages(storage, hotelId, imageFiles);
-
-            // Update the hotel document with the final image URLs.
-            await updateDoc(docRef, { imageUrls })
-                .catch((serverError) => {
-                    // This catches errors during the update, which could also be permission-related.
-                    const permissionError = new FirestorePermissionError({
-                        path: docRef.path,
-                        operation: 'update',
-                        requestResourceData: { imageUrls },
-                    });
-                    errorEmitter.emit('permission-error', permissionError);
-                    throw serverError; // Re-throw to notify the UI of failure.
+        .then(docRef => {
+            // This .then() block only executes if addDoc is successful.
+            // Now, handle image uploads and the final update.
+            return uploadImages(storage, docRef.id, imageFiles)
+                .then(imageUrls => {
+                    // This is the second Firestore operation: update the doc.
+                    return updateDoc(docRef, { imageUrls })
+                        .catch(serverError => {
+                            // Catch errors specifically for the updateDoc operation.
+                            const permissionError = new FirestorePermissionError({
+                                path: docRef.path,
+                                operation: 'update',
+                                requestResourceData: { imageUrls },
+                            });
+                            errorEmitter.emit('permission-error', permissionError);
+                            // Propagate the error to fail the entire chain.
+                            throw serverError;
+                        });
                 });
-
-            return docRef; // Return the original docRef on full success.
         })
-        .catch((serverError) => {
+        .catch(serverError => {
             // This is the crucial part for catching the initial 'create' permission error.
-            // It will not catch errors from the .then() block above.
             const permissionError = new FirestorePermissionError({
                 path: hotelsCollection.path,
                 operation: 'create',
                 requestResourceData: hotel,
             });
             errorEmitter.emit('permission-error', permissionError);
-            throw serverError; // Re-throw to notify the UI of the failure.
+            // Re-throw the original error to ensure the calling code knows about the failure.
+            throw serverError;
         });
 }
 
