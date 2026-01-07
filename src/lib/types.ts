@@ -40,3 +40,14 @@ export type RoomAvailability = {
     price: number;
     roomsAvailable: number;
 };
+
+export type Review = {
+    id: string;
+    hotelId: string;
+    userId: string;
+    userName: string;
+    userPhotoUrl?: string;
+    rating: number;
+    comment: string;
+    createdAt: any;
+};

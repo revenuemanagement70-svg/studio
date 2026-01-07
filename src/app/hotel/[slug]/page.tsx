@@ -4,8 +4,8 @@ import { Suspense, useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail, Calendar, Users, Loader2, AlertCircle } from 'lucide-react';
-import type { hotel as Hotel, RoomAvailability } from '@/lib/types';
+import { ArrowLeft, Star, Wifi, ParkingCircle, UtensilsCrossed, User, Mail, Calendar, Users, Loader2, AlertCircle, MessageSquare } from 'lucide-react';
+import type { hotel as Hotel, RoomAvailability, Review } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Button } from '@/components/ui/button';
@@ -16,10 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { createBooking } from '@/firebase/firestore/bookings';
 import { getAvailabilityForDateRange } from '@/firebase/firestore/availability';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { format, differenceInDays, parseISO, formatDistanceToNow } from 'date-fns';
 import {
   Carousel,
   CarouselContent,
@@ -28,6 +28,10 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'wifi': <Wifi className="size-4" />,
@@ -268,6 +272,83 @@ function ImageGallery({ hotel }: { hotel: Hotel }) {
   )
 }
 
+function StarRating({ rating }: { rating: number }) {
+    return (
+        <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+                <Star
+                    key={i}
+                    className={`size-4 ${i < Math.floor(rating) ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`}
+                />
+            ))}
+        </div>
+    );
+}
+
+function ReviewCard({ review }: { review: Review }) {
+    const reviewDate = review.createdAt?.toDate ? formatDistanceToNow(review.createdAt.toDate(), { addSuffix: true }) : 'just now';
+
+    return (
+        <div className="flex gap-4 border-b py-6 last:border-b-0">
+            <Avatar>
+                <AvatarImage src={review.userPhotoUrl} alt={review.userName} />
+                <AvatarFallback>{review.userName.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-grow">
+                <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold">{review.userName}</h4>
+                    <span className="text-xs text-muted-foreground">{reviewDate}</span>
+                </div>
+                <StarRating rating={review.rating} />
+                <p className="text-sm text-foreground mt-2">{review.comment}</p>
+            </div>
+        </div>
+    );
+}
+
+function ReviewsSection({ hotelId }: { hotelId: string }) {
+    const firestore = useFirestore();
+    const reviewsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, `hotels/${hotelId}/reviews`), orderBy('createdAt', 'desc'));
+    }, [firestore, hotelId]);
+
+    const { data: reviews, loading, error } = useCollection<Review>(reviewsQuery);
+
+    if (loading) {
+        return (
+             <div className="space-y-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+            </div>
+        )
+    }
+
+    if (error) {
+        return <p className="text-destructive text-center py-4">Error loading reviews.</p>
+    }
+    
+    return (
+        <div id="reviews">
+            <h3 className="font-bold text-xl mb-4 font-headline flex items-center gap-2">
+                <MessageSquare className="size-5" /> Guest Reviews
+            </h3>
+            {reviews && reviews.length > 0 ? (
+                <div className="flow-root">
+                    <div className="-my-6 divide-y divide-gray-200">
+                        {reviews.map(review => (
+                            <ReviewCard key={review.id} review={review} />
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <p className="text-muted-foreground text-sm text-center py-8">No reviews yet. Be the first to leave one!</p>
+            )}
+        </div>
+    );
+}
+
+
 function HotelDetailsContent() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
@@ -351,68 +432,74 @@ function HotelDetailsContent() {
         </Link>
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+        <div className="lg:col-span-3 space-y-8">
             <ImageGallery hotel={hotel} />
+            <div>
+              <h3 className="font-bold text-xl mb-4 font-headline">About this hotel</h3>
+              <p className="text-foreground">{hotel.description}</p>
+            </div>
+             {hotel.amenities && hotel.amenities.length > 0 && (
+              <div>
+                  <h3 className="font-bold text-xl mb-4 font-headline">Amenities</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                      {hotel.amenities.map((amenity, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                           <div className="flex-shrink-0 size-8 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                             {getAmenityIcon(amenity)}
+                           </div>
+                          <span className="capitalize text-sm font-semibold">{amenity}</span>
+                      </div>
+                      ))}
+                  </div>
+              </div>
+              )}
+               <ReviewsSection hotelId={hotel.id} />
         </div>
-        <div className="lg:col-span-1">
-            <Card>
-                <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                        <h1 className="text-3xl font-bold font-headline">{hotel.name}</h1>
-                        <div className="flex-shrink-0 flex items-center gap-1.5 bg-amber-400 text-amber-900 font-bold px-3 py-1.5 rounded-md text-lg">
-                            <Star className="size-5 fill-current" />
-                            <span>{hotel.rating.toFixed(1)}</span>
+        <div className="lg:col-span-2">
+            <div className="sticky top-24">
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-2">
+                            <h1 className="text-2xl font-bold font-headline">{hotel.name}</h1>
+                            <div className="flex-shrink-0 flex items-center gap-1.5 bg-amber-400 text-amber-900 font-bold px-3 py-1.5 rounded-md text-lg">
+                                <Star className="size-5 fill-current" />
+                                <span>{hotel.rating.toFixed(1)}</span>
+                            </div>
                         </div>
-                    </div>
-                    <p className="text-md text-muted-foreground mb-6">{hotel.streetAddress}, {hotel.city}</p>
-                    
-                    <p className="text-foreground mb-6">{hotel.description}</p>
-                    
-                    {hotel.amenities && hotel.amenities.length > 0 && (
-                    <div className="mb-6">
-                        <h3 className="font-bold text-lg mb-3 font-headline">Amenities</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {hotel.amenities.map((amenity, i) => (
-                            <Badge key={i} variant="secondary" className="capitalize flex items-center gap-2 py-1 px-3 text-sm">
-                                {getAmenityIcon(amenity)}
-                                <span>{amenity}</span>
-                            </Badge>
-                            ))}
+                        <p className="text-md text-muted-foreground mb-6">{hotel.streetAddress}, {hotel.city}</p>
+                        
+                        <div className="mt-auto flex flex-col justify-between items-center gap-4 pt-6 border-t">
+                            <div className="text-left w-full">
+                               {availability.status === 'loading' && <p>Checking price...</p>}
+                               {availability.status === 'error' && <p className="text-destructive text-sm font-semibold">{availability.message}</p>}
+                               {availability.status === 'unavailable' && <p className="text-destructive text-sm font-semibold flex items-center gap-2"><AlertCircle className="size-4"/>{availability.message}</p>}
+                               {availability.status === 'available' && (
+                                <>
+                                    <span className="text-3xl font-bold font-headline">₹{totalPrice.toLocaleString('en-IN')}</span>
+                                    <span className="text-md text-muted-foreground"> / {nights} night{nights > 1 ? 's' : ''}</span>
+                                </>
+                               )}
+                               {!checkin && !checkout && (
+                                <>
+                                    <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
+                                    <span className="text-md text-muted-foreground"> / night</span>
+                                </>
+                               )}
+                            </div>
+                            <BookingDialog 
+                              hotel={hotel} 
+                              checkin={checkin || undefined} 
+                              checkout={checkout || undefined}
+                              guests={guests || undefined}
+                              availability={availability}
+                              totalPrice={totalPrice}
+                              nights={nights}
+                            />
                         </div>
-                    </div>
-                    )}
-
-                    <div className="mt-auto flex flex-col justify-between items-center gap-4 pt-6 border-t">
-                        <div className="text-left w-full">
-                           {availability.status === 'loading' && <p>Checking price...</p>}
-                           {availability.status === 'error' && <p className="text-destructive text-sm font-semibold">{availability.message}</p>}
-                           {availability.status === 'unavailable' && <p className="text-destructive text-sm font-semibold flex items-center gap-2"><AlertCircle className="size-4"/>{availability.message}</p>}
-                           {availability.status === 'available' && (
-                            <>
-                                <span className="text-3xl font-bold font-headline">₹{totalPrice.toLocaleString('en-IN')}</span>
-                                <span className="text-md text-muted-foreground"> / {nights} night{nights > 1 ? 's' : ''}</span>
-                            </>
-                           )}
-                           {!checkin && !checkout && (
-                            <>
-                                <span className="text-3xl font-bold font-headline">₹{hotel.price.toLocaleString('en-IN')}</span>
-                                <span className="text-md text-muted-foreground"> / night</span>
-                            </>
-                           )}
-                        </div>
-                        <BookingDialog 
-                          hotel={hotel} 
-                          checkin={checkin || undefined} 
-                          checkout={checkout || undefined}
-                          guests={guests || undefined}
-                          availability={availability}
-                          totalPrice={totalPrice}
-                          nights={nights}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       </div>
     </div>

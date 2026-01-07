@@ -206,6 +206,20 @@
             }
         },
         "required": ["date", "price", "roomsAvailable"]
+    },
+    "review": {
+        "title": "Review",
+        "description": "A review of a hotel by a user.",
+        "type": "object",
+        "properties": {
+            "hotelId": { "type": "string" },
+            "userId": { "type": "string" },
+            "userName": { "type": "string" },
+            "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+            "comment": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["hotelId", "userId", "userName", "rating", "createdAt"]
     }
   },
   "auth": {
@@ -223,6 +237,12 @@
             "$ref": "#/entities/roomAvailability"
         },
         "description": "Availability and pricing information for a specific hotel on a specific date."
+    },
+    "/hotels/{hotelId}/reviews/{reviewId}": {
+      "schema": {
+        "$ref": "#/entities/review"
+      },
+      "description": "A list of all reviews for a specific hotel."
     },
     "/users/{userId}/favorites/{favoriteId}": {
       "schema": {
