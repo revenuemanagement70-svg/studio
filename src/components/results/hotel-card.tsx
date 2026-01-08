@@ -40,7 +40,7 @@ function getAmenityIcon(amenity: string): React.ReactNode {
 
 export function HotelCard({ hotel, source = 'results' }: HotelCardProps) {
   const imageUrl = hotel.imageUrls && hotel.imageUrls.length > 0 ? hotel.imageUrls[0] : `https://picsum.photos/seed/${hotel.name.replace(/\s+/g, '-')}/400/300`;
-  const { user, loading: userLoading } = useUser();
+  const { user, isUserLoading: userLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const { favorites, loading: favoritesLoading } = useFavorites(user?.uid);

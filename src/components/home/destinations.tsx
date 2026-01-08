@@ -66,7 +66,7 @@ export function Destinations() {
                                 <h3 className="font-headline text-2xl font-bold">{dest.name}</h3>
                                 <div className="flex items-center gap-4 text-sm opacity-90 mt-1">
                                     <span className="flex items-center gap-1.5"><Building2 className="size-4" /> {dest.hotels} Hotels</span>
-                                    <span className="flex items-center gap-1.5"><Tag className="size-4" /> From ₹{dest.price}</span>
+                                    <span className="flex items-center gap-1.5"><Tag className="size-4" /> From ₹{dest.price.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </Link>

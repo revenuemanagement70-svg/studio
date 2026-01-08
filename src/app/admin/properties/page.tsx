@@ -124,7 +124,7 @@ export default function PropertiesPage() {
                       <h3 className="font-bold font-headline">{hotel.name}</h3>
                       <p className="text-sm text-muted-foreground">{hotel.streetAddress}, {hotel.city}</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline">₹{hotel.price}/night</Badge>
+                        <Badge variant="outline">₹{hotel.price.toLocaleString('en-IN')}/night</Badge>
                         <Badge variant="secondary" className="flex items-center gap-1">
                           <Star className="size-3 fill-amber-400 text-amber-500" /> {hotel.rating}
                         </Badge>

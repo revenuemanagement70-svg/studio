@@ -5,11 +5,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Calendar, Hotel, User, Hash, AlertCircle } from "lucide-react";
-import { useBookings, getBookingById } from '@/firebase/firestore/use-bookings';
+import { getBookingById } from '@/firebase/firestore/use-bookings';
 import type { booking } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
 import { format } from 'date-fns';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useMemoFirebase } from '@/firebase/provider';
+import { collection, query, orderBy } from 'firebase/firestore';
 
 function BookingCard({ booking }: { booking: booking }) {
     const checkinDate = booking.checkin ? format(new Date(booking.checkin), 'PPP') : 'N/A';
@@ -52,7 +55,13 @@ function BookingCard({ booking }: { booking: booking }) {
 }
 
 function BookingsList() {
-    const { bookings, loading, error } = useBookings();
+    const firestore = useFirestore();
+    const bookingsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'bookings'), orderBy('bookedAt', 'desc'));
+    }, [firestore]);
+
+    const { data: bookings, isLoading: loading, error } = useCollection<booking>(bookingsQuery);
     
     if (loading) {
         return (
