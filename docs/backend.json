@@ -1,410 +1,181 @@
+
 {
   "entities": {
-    "UserProfile": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserProfile",
+    "User": {
+      "title": "User",
+      "description": "Stores public-facing information for all users (guests, admins).",
       "type": "object",
-      "description": "Represents a user profile in the Staylo application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "Email address of the user.",
-          "format": "email"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "First name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "Last name of the user."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "Phone number of the user."
-        },
-        "dateJoined": {
-          "type": "string",
-          "description": "Date and time when the user joined the platform.",
-          "format": "date-time"
-        },
-        "lastLogin": {
-          "type": "string",
-          "description": "Date and time of the user's last login.",
-          "format": "date-time"
-        }
+        "uid": { "type": "string", "description": "The user's unique Firebase Auth ID." },
+        "email": { "type": "string", "format": "email", "description": "User's primary email address." },
+        "displayName": { "type": "string", "description": "User's full name." },
+        "photoURL": { "type": "string", "format": "uri", "description": "URL for the user's profile picture." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of account creation." }
       },
-      "required": [
-        "id",
-        "email",
-        "firstName",
-        "lastName"
-      ]
+      "required": ["uid", "email", "displayName"]
     },
     "Hotel": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Hotel",
+      "description": "The central collection for all hotel properties on the platform.",
       "type": "object",
-      "description": "Represents a hotel listed on the Staylo platform.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Hotel entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the hotel."
-        },
+        "name": { "type": "string", "description": "The official name of the hotel." },
+        "description": { "type": "string", "description": "A detailed marketing description." },
         "address": {
-          "type": "string",
-          "description": "Address of the hotel."
-        },
-        "city": {
-          "type": "string",
-          "description": "City where the hotel is located."
-        },
-        "state": {
-          "type": "string",
-          "description": "State where the hotel is located."
-        },
-        "country": {
-          "type": "string",
-          "description": "Country where the hotel is located."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the hotel."
-        },
-        "rating": {
-          "type": "number",
-          "description": "Average rating of the hotel (e.g., 4.5 stars)."
-        },
-        "amenities": {
-          "type": "array",
-          "description": "A list of amenities offered by the hotel.",
-          "items": {
-            "type": "string"
+          "type": "object",
+          "properties": {
+            "street": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "postalCode": { "type": "string" },
+            "country": { "type": "string" }
           }
         },
-        "imageUrls": {
-          "type": "array",
-          "description": "URLs of images showcasing the hotel.",
-          "items": {
-            "type": "string"
+        "location": { "type": "string", "description": "Firestore GeoPoint for map-based queries." },
+        "imageUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "amenities": { "type": "array", "items": { "type": "string" } },
+        "starRating": { "type": "number", "description": "The hotel's star rating (e.g., 4.5)." },
+        "contact": {
+          "type": "object",
+          "properties": {
+            "phone": { "type": "string" },
+            "email": { "type": "string", "format": "email" }
           }
-        }
+        },
+        "isActive": { "type": "boolean", "description": "If the hotel is live and bookable." },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "address",
-        "city",
-        "state",
-        "country"
-      ]
+      "required": ["name", "address", "location", "isActive"]
+    },
+    "Room": {
+      "title": "Room",
+      "description": "Stores the definitions of room *types* for each hotel.",
+      "type": "object",
+      "properties": {
+        "hotelId": { "type": "string", "description": "FK to /hotels." },
+        "roomTypeId": { "type": "string", "description": "Internal or OTA identifier." },
+        "name": { "type": "string", "description": "Name of the room type (e.g., 'Deluxe King Room')." },
+        "description": { "type": "string" },
+        "capacity": { "type": "number", "description": "Maximum number of guests." },
+        "beds": {
+          "type": "object",
+          "properties": {
+            "king": { "type": "number" },
+            "queen": { "type": "number" },
+            "twin": { "type": "number" }
+          }
+        },
+        "imageUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "amenities": { "type": "array", "items": { "type": "string" } },
+        "totalInventory": { "type": "number", "description": "Total number of physical rooms of this type." }
+      },
+      "required": ["hotelId", "name", "capacity", "totalInventory"]
+    },
+    "Availability": {
+      "title": "Availability",
+      "description": "Stores the price and inventory for a room type on a specific date.",
+      "type": "object",
+      "properties": {
+        "roomId": { "type": "string", "description": "FK to /rooms." },
+        "hotelId": { "type": "string", "description": "Denormalized FK to /hotels." },
+        "date": { "type": "string", "format": "date", "description": "The date for this entry (YYYY-MM-DD)." },
+        "price": { "type": "number", "description": "Price in smallest currency unit (e.g., paise)." },
+        "roomsAvailable": { "type": "number", "description": "Number of rooms available for booking." }
+      },
+      "required": ["roomId", "hotelId", "date", "price", "roomsAvailable"]
     },
     "Booking": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Booking",
+      "description": "A record for every booking made on the platform.",
       "type": "object",
-      "description": "Represents a booking made by a user for a hotel.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Booking entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Booking)"
-        },
-        "hotelId": {
-          "type": "string",
-          "description": "Reference to Hotel. (Relationship: Hotel 1:N Booking)"
-        },
-        "checkInDate": {
-          "type": "string",
-          "description": "Check-in date for the booking.",
-          "format": "date-time"
-        },
-        "checkOutDate": {
-          "type": "string",
-          "description": "Check-out date for the booking.",
-          "format": "date-time"
-        },
-        "numberOfGuests": {
-          "type": "number",
-          "description": "Number of guests for the booking."
-        },
-        "totalPrice": {
-          "type": "number",
-          "description": "Total price of the booking."
-        },
-        "bookingDate": {
-          "type": "string",
-          "description": "Date and time when the booking was made.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the booking (e.g., confirmed, cancelled)."
-        }
+        "userId": { "type": "string", "description": "FK to /users." },
+        "hotelId": { "type": "string", "description": "FK to /hotels." },
+        "roomId": { "type": "string", "description": "FK to /rooms." },
+        "checkInDate": { "type": "string", "format": "date" },
+        "checkOutDate": { "type": "string", "format": "date" },
+        "numGuests": { "type": "number" },
+        "totalAmount": { "type": "number", "description": "Total price in smallest currency unit." },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled", "completed"] },
+        "bookedAt": { "type": "string", "format": "date-time" },
+        "paymentId": { "type": "string", "description": "FK to /payments." }
       },
-      "required": [
-        "id",
-        "userId",
-        "hotelId",
-        "checkInDate",
-        "checkOutDate",
-        "numberOfGuests",
-        "totalPrice",
-        "bookingDate",
-        "status"
-      ]
+      "required": ["userId", "hotelId", "roomId", "checkInDate", "checkOutDate", "numGuests", "totalAmount", "status", "bookedAt"]
     },
-    "Destination": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Destination",
+    "Favorite": {
+      "title": "Favorite",
+      "description": "Stores a user's favorited hotels.",
       "type": "object",
-      "description": "Represents a travel destination.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Destination entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the destination (e.g., Delhi, Mumbai)."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the destination."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL of the image representing the destination."
-        },
-        "hotelIds": {
-          "type": "array",
-          "description": "References to Hotels. (Relationship: Destination 1:N Hotel)",
-          "items": {
-            "type": "string"
-          }
-        }
+        "userId": { "type": "string", "description": "FK to /users." },
+        "hotelId": { "type": "string", "description": "FK to /hotels." },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "imageUrl"
-      ]
+      "required": ["userId", "hotelId"]
     },
-    "Review": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Review",
+    "Payment": {
+      "title": "Payment",
+      "description": "A ledger of all financial transactions.",
       "type": "object",
-      "description": "Represents a review given by a user for a hotel.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Review entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Review)"
-        },
-        "hotelId": {
-          "type": "string",
-          "description": "Reference to Hotel. (Relationship: Hotel 1:N Review)"
-        },
-        "rating": {
-          "type": "number",
-          "description": "Rating given by the user (e.g., 1 to 5 stars)."
-        },
-        "comment": {
-          "type": "string",
-          "description": "Comment provided by the user as part of the review."
-        },
-        "reviewDate": {
-          "type": "string",
-          "description": "Date and time when the review was submitted.",
-          "format": "date-time"
-        }
+        "bookingId": { "type": "string", "description": "FK to /bookings." },
+        "userId": { "type": "string", "description": "FK to the user who paid." },
+        "amount": { "type": "number", "description": "Amount in smallest currency unit." },
+        "currency": { "type": "string", "enum": ["INR", "USD"] },
+        "status": { "type": "string", "enum": ["succeeded", "failed", "pending"] },
+        "provider": { "type": "string", "description": "Payment gateway used (e.g., 'stripe')." },
+        "providerTransactionId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "userId",
-        "hotelId",
-        "rating",
-        "comment",
-        "reviewDate"
-      ]
+      "required": ["bookingId", "userId", "amount", "currency", "status", "provider", "createdAt"]
     },
-    "Offer": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Offer",
+    "Admin": {
+      "title": "Admin",
+      "description": "Links users to roles and the hotels they manage for RBAC.",
       "type": "object",
-      "description": "Represents a promotional offer or discount.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Offer entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the offer (e.g., Flat 30% OFF)."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the offer."
-        },
-        "discountPercentage": {
-          "type": "number",
-          "description": "Discount percentage offered."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "Start date of the offer.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "End date of the offer.",
-          "format": "date-time"
-        },
-        "hotelIds": {
-          "type": "array",
-          "description": "References to Hotels. (Relationship: Offer N:N Hotel)",
-          "items": {
-            "type": "string"
-          }
-        }
+        "userId": { "type": "string", "description": "The uid of the user being granted admin rights." },
+        "hotelId": { "type": "string", "description": "FK to /hotels. Null for super_admin." },
+        "role": { "type": "string", "enum": ["hotel_admin", "super_admin"] }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "startDate",
-        "endDate"
-      ]
+      "required": ["userId", "role"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["anonymous", "google.com", "password"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/userProfiles/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores user profile information. The 'userId' is used to identify the user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/hotels/{hotelId}",
-        "definition": {
-          "entityName": "Hotel",
-          "schema": {
-            "$ref": "#/backend/entities/Hotel"
-          },
-          "description": "Stores hotel information.",
-          "params": [
-            {
-              "name": "hotelId",
-              "description": "The unique identifier for the hotel."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/userProfiles/{userId}/bookings/{bookingId}",
-        "definition": {
-          "entityName": "Booking",
-          "schema": {
-            "$ref": "#/backend/entities/Booking"
-          },
-          "description": "Stores booking information for a specific user. 'userId' and 'bookingId' are used to identify the booking.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who made the booking."
-            },
-            {
-              "name": "bookingId",
-              "description": "The unique identifier for the booking."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/destinations/{destinationId}",
-        "definition": {
-          "entityName": "Destination",
-          "schema": {
-            "$ref": "#/backend/entities/Destination"
-          },
-          "description": "Stores destination information.",
-          "params": [
-            {
-              "name": "destinationId",
-              "description": "The unique identifier for the destination."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/userProfiles/{userId}/reviews/{reviewId}",
-        "definition": {
-          "entityName": "Review",
-          "schema": {
-            "$ref": "#/backend/entities/Review"
-          },
-          "description": "Stores review information for a specific user. 'userId' and 'reviewId' are used to identify the review.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who wrote the review."
-            },
-            {
-              "name": "reviewId",
-              "description": "The unique identifier for the review."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/offers/{offerId}",
-        "definition": {
-          "entityName": "Offer",
-          "schema": {
-            "$ref": "#/backend/entities/Offer"
-          },
-          "description": "Stores offer information.",
-          "params": [
-            {
-              "name": "offerId",
-              "description": "The unique identifier for the offer."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to ensure authorization independence and support the required query capabilities (QAPs) by adhering to the principles of denormalization and structural segregation. User profiles are stored in a dedicated collection (`/userProfiles`) for easy management and access. Hotels and Destinations are stored in their collections, allowing for global listing and searching. Bookings and Reviews are stored as subcollections under the respective user's profile (`/userProfiles/{userId}/bookings` and `/userProfiles/{userId}/reviews`) to ensure clear ownership and simplified security rules based on user ID. Offers are stored in a dedicated collection (`/offers`).\n\n**Authorization Independence:**\n\n*   The structure promotes authorization independence by avoiding hierarchical authorization dependencies. For instance, bookings and reviews are stored under the user's profile, eliminating the need to fetch parent document data for authorization. The `userId` is inherently available in the path.\n\n**QAPs Support:**\n\n*   The structure supports secure `list` operations by segregating data based on ownership and type. Listing bookings or reviews is scoped to the specific user's subcollections, preventing unauthorized access to other users' data.\n\n*   The global collections (`/hotels`, `/destinations`, `/offers`) allow for efficient listing and filtering across all entities without needing to query subcollections, ensuring scalability and performance.\n\nThis design enforces clear data ownership, simplifies security rules, and optimizes query performance, aligning with the core design principles."
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores public user profile information."
+    },
+    "/hotels/{hotelId}": {
+      "schema": { "$ref": "#/entities/Hotel" },
+      "description": "Master collection of all hotel properties."
+    },
+    "/rooms/{roomId}": {
+      "schema": { "$ref": "#/entities/Room" },
+      "description": "Definitions of room types for all hotels."
+    },
+    "/availability/{roomId}_{date}": {
+      "schema": { "$ref": "#/entities/Availability" },
+      "description": "Daily inventory and pricing for each room type."
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Collection of all bookings made on the platform."
+    },
+    "/favorites/{userId}_{hotelId}": {
+      "schema": { "$ref": "#/entities/Favorite" },
+      "description": "Tracks user's favorite hotels."
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Ledger of all payment transactions."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Manages role-based access for hotel and super admins."
+    }
   }
 }
