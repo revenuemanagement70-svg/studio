@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "user": {
@@ -220,6 +221,19 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["hotelId", "userId", "userName", "rating", "createdAt"]
+    },
+    "apiKey": {
+        "title": "API Key",
+        "description": "An API key for programmatic access.",
+        "type": "object",
+        "properties": {
+            "userId": { "type": "string", "description": "The ID of the user who owns the key." },
+            "keyPrefix": { "type": "string", "description": "The first 7 characters of the key for display purposes." },
+            "keyHash": { "type": "string", "description": "The SHA-256 hash of the API key for secure storage and verification." },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "status": { "type": "string", "enum": ["active", "revoked"] }
+        },
+        "required": ["userId", "keyPrefix", "keyHash", "createdAt", "status"]
     }
   },
   "auth": {
@@ -255,6 +269,12 @@
         "$ref": "#/entities/booking"
       },
       "description": "A collection of all bookings made on the platform."
+    },
+    "/users/{userId}/apiKeys/{apiKeyId}": {
+        "schema": {
+            "$ref": "#/entities/apiKey"
+        },
+        "description": "API keys associated with a user."
     }
   }
 }

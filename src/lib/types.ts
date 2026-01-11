@@ -1,3 +1,4 @@
+
 export type hotel = {
     id: string;
     name: string;
@@ -50,4 +51,11 @@ export type Review = {
     rating: number;
     comment: string;
     createdAt: any;
+};
+
+export type ApiKey = {
+    id: string;
+    keyPrefix: string;
+    createdAt: any;
+    status: 'active' | 'revoked';
 };

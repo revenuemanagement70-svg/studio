@@ -1,16 +1,142 @@
 
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { User, Key, Bell, Palette, TestTube } from "lucide-react";
-import { useFirestore } from "@/firebase";
+import { User, Key, Bell, Palette, TestTube, PlusCircle, AlertTriangle, Copy, Check } from "lucide-react";
+import { useFirestore, useUser } from "@/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
+import React, { useState, useTransition } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { generateApiKey, listApiKeys, revokeApiKey } from "@/firebase/firestore/api-keys";
+import { useCollection, useMemoFirebase } from "@/firebase";
+import { ApiKey } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+
+function ApiKeyCard() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isGenerating, startTransition] = useTransition();
+
+    const [newApiKey, setNewApiKey] = useState<string | null>(null);
+    const [showKeyDialog, setShowKeyDialog] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const apiKeysQuery = useMemoFirebase(() => {
+        if (!firestore || !user) return null;
+        return collection(firestore, 'users', user.uid, 'apiKeys');
+    }, [firestore, user]);
+
+    const { data: apiKeys, isLoading } = useCollection<ApiKey>(apiKeysQuery);
+
+    const handleGenerateKey = () => {
+        if (!firestore || !user) return;
+        startTransition(async () => {
+            try {
+                const { plaintextKey } = await generateApiKey(firestore, user.uid);
+                setNewApiKey(plaintextKey);
+                setShowKeyDialog(true);
+            } catch (error) {
+                toast({ variant: "destructive", title: "Error Generating Key", description: "Could not generate a new API key." });
+            }
+        });
+    };
+
+    const handleRevokeKey = async (keyId: string) => {
+        if (!firestore || !user) return;
+        try {
+            await revokeApiKey(firestore, user.uid, keyId);
+            toast({ title: "API Key Revoked" });
+        } catch (error) {
+             toast({ variant: "destructive", title: "Error Revoking Key", description: "Could not revoke the API key." });
+        }
+    }
+
+    const copyToClipboard = () => {
+        if (!newApiKey) return;
+        navigator.clipboard.writeText(newApiKey);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Key className="size-5" /> API Keys</CardTitle>
+                    <CardDescription>Manage API keys for programmatic access to Staylo.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {isLoading && (
+                        <div className="space-y-2">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    )}
+                    {!isLoading && apiKeys.length > 0 && (
+                        <div className="space-y-2">
+                            {apiKeys.map(key => (
+                                <div key={key.id} className="flex items-center justify-between p-3 bg-secondary rounded-md">
+                                    <div>
+                                        <p className="font-mono text-sm font-semibold">sty_...{key.keyPrefix.slice(-4)}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Created on {format(key.createdAt.toDate(), 'PPP')}
+                                            {key.status === 'revoked' && <span className="text-destructive font-bold ml-2">(Revoked)</span>}
+                                        </p>
+                                    </div>
+                                    <Button variant="destructive" size="sm" onClick={() => handleRevokeKey(key.id)} disabled={key.status === 'revoked'}>
+                                        Revoke
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                     {!isLoading && apiKeys.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">No API keys found.</p>
+                     )}
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleGenerateKey} disabled={isGenerating}>
+                        {isGenerating ? "Generating..." : <><PlusCircle className="size-4 mr-2" /> Generate New Key</>}
+                    </Button>
+                </CardFooter>
+            </Card>
+
+            <Dialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>New API Key Generated</DialogTitle>
+                        <DialogDescription>
+                            Please copy your new API key. For security reasons, you will not be able to see it again.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="bg-destructive/10 p-4 rounded-md space-y-4">
+                        <p className="text-destructive font-semibold flex items-center gap-2">
+                           <AlertTriangle className="size-4" /> Store this key securely.
+                        </p>
+                        <div className="flex items-center gap-2 p-3 bg-background rounded-md">
+                            <pre className="text-sm flex-grow overflow-x-auto">{newApiKey}</pre>
+                            <Button variant="ghost" size="icon" onClick={copyToClipboard}>
+                                {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setShowKeyDialog(false)}>I have saved my key</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    )
+}
+
 
 export default function SettingsPage() {
     const { toast } = useToast();
@@ -63,6 +189,8 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-8">
+                <ApiKeyCard />
+
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><TestTube className="size-5" /> Firestore Write Test</CardTitle>
