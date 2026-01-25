@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Facebook, Instagram, Phone, Mail } from 'lucide-react';
+import { Logo } from '../ui/logo';
 
 export function Footer() {
   return (
@@ -7,7 +8,7 @@ export function Footer() {
       <div className="container mx-auto px-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
           <div className="col-span-1 sm:col-span-2">
-            <h3 id="footer-heading" className="text-2xl font-black gradient-text font-headline mb-4">Staylo</h3>
+            <h3 id="footer-heading" className="text-2xl font-black text-white font-headline mb-4">Staylo</h3>
             <p className="text-gray-400 text-sm mb-4 max-w-xs">
               Your trusted partner for finding the perfect accommodation across India.
             </p>
@@ -20,7 +21,7 @@ export function Footer() {
           <div>
             <h4 className="font-headline font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="text-gray-400 hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="#" className="text-gray-400 hover:text-primary transition-colors">Careers</Link></li>
               <li><Link href="#" className="text-gray-400 hover:text-primary transition-colors">Press</Link></li>
               <li><Link href="#" className="text-gray-400 hover:text-primary transition-colors">Blog</Link></li>
