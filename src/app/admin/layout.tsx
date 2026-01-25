@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { getAuth, signOut } from 'firebase/auth';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/ui/logo';
 
 function AdminSidebar() {
   const navItems = [
@@ -39,9 +40,7 @@ function AdminSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2">
-            <Link href="/admin" className="text-2xl font-black gradient-text font-headline">
-                Staylo
-            </Link>
+            <Logo href="/admin" />
             <span className="text-xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-md">Admin</span>
         </div>
       </SidebarHeader>

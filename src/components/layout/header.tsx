@@ -10,6 +10,7 @@ import { useUser } from '@/firebase';
 import { getAuth, signOut } from 'firebase/auth';
 import { Separator } from '../ui/separator';
 import { useRouter } from 'next/navigation';
+import { Logo } from '../ui/logo';
 
 const navLinks = [
   { href: '#home', label: 'Home', icon: <Home /> },
@@ -50,9 +51,7 @@ export function Header() {
     >
       <div className="container mx-auto flex items-center justify-between px-5">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-2xl font-black gradient-text font-headline">
-            Staylo
-          </Link>
+          <Logo />
           <div className="hidden text-sm text-muted-foreground md:block">
             Call: <a href="tel:+919899308683" className="font-bold text-primary hover:underline">+91-98993-08683</a>
           </div>
@@ -126,9 +125,7 @@ export function Header() {
                 <SheetHeader className="p-6">
                     <SheetTitle className="sr-only">Menu</SheetTitle>
                     <div className="flex justify-between items-center border-b pb-4">
-                        <Link href="/" className="text-2xl font-black gradient-text font-headline" onClick={() => setMobileMenuOpen(false)}>
-                            Staylo
-                        </Link>
+                        <Logo onClick={() => setMobileMenuOpen(false)} />
                         <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
                             <X className="size-6" />
                         </Button>
