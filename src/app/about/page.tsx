@@ -64,9 +64,9 @@ export default function AboutPage() {
               </div>
               <div className="relative h-80 w-full rounded-xl shadow-lg">
                 <Image
-                  src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxob3RlbCUyMHBvb2x8ZW58MHx8fHwxNzYyNzE4MzkwfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Luxury hotel pool area"
-                  data-ai-hint="hotel pool"
+                  src="https://images.unsplash.com/photo-1566073771259-6a8506099945?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxob3RlbCUyMHJlY2VwdGlvbnxlbnwwfHx8fDE3NjMxMzYxODl8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                  alt="Hotel reception with friendly staff"
+                  data-ai-hint="hotel reception"
                   fill
                   className="object-cover rounded-xl"
                 />
