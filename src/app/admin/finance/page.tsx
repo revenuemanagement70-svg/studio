@@ -24,7 +24,7 @@ function FinanceTable({ hotels }: { hotels: Hotel[] }) {
                             <div className="font-medium font-headline">{hotel.name}</div>
                             <div className="text-xs text-muted-foreground">{hotel.address}</div>
                         </TableCell>
-                        <TableCell className="text-right">{hotel.price.toLocaleString('en-IN')}</TableCell>
+                        <TableCell className="text-right">₹{hotel.price.toLocaleString('en-IN')}</TableCell>
                         <TableCell className="text-right">{hotel.taxRate?.toFixed(1) ?? 'N/A'}</TableCell>
                         <TableCell className="text-right">{hotel.commissionRate?.toFixed(1) ?? 'N/A'}</TableCell>
                     </TableRow>
