@@ -22,13 +22,8 @@ export function Logo({ className, ...props }: ComponentProps<typeof Link>) {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
         >
-            <path
-                d="M17.5 4.5C17.5 6.98528 15.4853 9 13 9H11C8.51472 9 6.5 11.0147 6.5 13.5C6.5 15.9853 8.51472 18 11 18H13"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
+          <path d="M18 20V8C18 5.79086 16.2091 4 14 4H6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M6 12H12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
       <span className="gradient-text">Staylo</span>
