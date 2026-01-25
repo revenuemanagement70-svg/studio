@@ -1,40 +1,8 @@
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import Image from 'next/image';
-import { Building, Globe, Heart, Users } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-const teamMembers = [
-  {
-    name: 'Aarav Sharma',
-    role: 'Founder & CEO',
-    image: 'https://picsum.photos/seed/aarav/200/200',
-    bio: 'With a passion for travel and technology, Aarav founded Staylo to revolutionize the hotel booking experience in India.',
-    hint: 'man portrait',
-  },
-  {
-    name: 'Priya Singh',
-    role: 'Chief Technology Officer',
-    image: 'https://picsum.photos/seed/priya/200/200',
-    bio: 'Priya leads our engineering team, building the robust platform that powers millions of bookings.',
-    hint: 'woman portrait',
-  },
-  {
-    name: 'Rohan Mehta',
-    role: 'Head of Product',
-    image: 'https://picsum.photos/seed/rohan/200/200',
-    bio: 'Rohan is dedicated to creating a seamless and delightful user experience for our customers and partners.',
-    hint: 'man headshot',
-  },
-  {
-    name: 'Anika Gupta',
-    role: 'Director of Partnerships',
-    image: 'https://picsum.photos/seed/anika/200/200',
-    bio: 'Anika builds and maintains strong relationships with our thousands of hotel partners across the country.',
-    hint: 'woman headshot',
-  },
-];
+import { Globe, Heart, Users } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const values = [
   {
@@ -126,35 +94,6 @@ export default function AboutPage() {
                     ))}
                 </div>
             </div>
-        </section>
-
-
-        {/* Team Section */}
-        <section className="py-16 lg:py-24 bg-background">
-          <div className="container mx-auto px-5">
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <h2 className="font-headline text-3xl lg:text-4xl font-bold mb-4">Meet the Team</h2>
-              <p className="text-muted-foreground lg:text-lg">The passionate minds driving Staylo forward.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {teamMembers.map((member) => (
-                <div key={member.name} className="text-center">
-                  <div className="relative h-40 w-40 mx-auto mb-4">
-                    <Image
-                      src={member.image}
-                      alt={`Portrait of ${member.name}`}
-                      data-ai-hint={member.hint}
-                      fill
-                      className="rounded-full object-cover"
-                    />
-                  </div>
-                  <h3 className="font-headline text-lg font-bold">{member.name}</h3>
-                  <p className="text-primary font-semibold text-sm mb-2">{member.role}</p>
-                  <p className="text-muted-foreground text-xs">{member.bio}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </section>
 
       </main>
