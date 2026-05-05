@@ -42,7 +42,7 @@ export default function AdminHotelsPage() {
         </div>
       </div>
       {loading ? <div className="skeleton" style={{ height: '400px', borderRadius: '16px' }} /> : (
-        <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: 'white', borderRadius: '16px', overflow: 'auto', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem', color: '#64748B' }}>Hotel</th>
@@ -57,9 +57,9 @@ export default function AdminHotelsPage() {
                 <tr key={hotel.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                   <td style={{ padding: '14px 20px' }}><div style={{ fontWeight: 600 }}>{hotel.name}</div><div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>{hotel.partner?.email}</div></td>
                   <td style={{ padding: '14px 20px', color: '#64748B' }}>{hotel.city}</td>
-                  <td style={{ padding: '14px 20px' }}><span style={{ fontWeight: 700, color: '#FFB800' }}>⭐ {hotel.rating}</span></td>
+                  <td style={{ padding: '14px 20px' }}><span style={{ fontWeight: 700, color: '#FFB800' }}>â­ {hotel.rating}</span></td>
                   <td style={{ padding: '14px 20px' }}><span style={{ padding: '4px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, background: hotel.status === 'ACTIVE' ? '#ECFDF5' : hotel.status === 'PENDING' ? '#FEF3C7' : '#FEF2F2', color: hotel.status === 'ACTIVE' ? '#22C55E' : hotel.status === 'PENDING' ? '#F59E0B' : '#EF4444' }}>{hotel.status}</span></td>
-                  <td style={{ padding: '14px 20px' }}><span style={{ color: hotel.isFeatured ? '#FF1F71' : '#94A3B8', fontWeight: 700 }}>{hotel.isFeatured ? '⭐ Yes' : 'No'}</span></td>
+                  <td style={{ padding: '14px 20px' }}><span style={{ color: hotel.isFeatured ? '#FF1F71' : '#94A3B8', fontWeight: 700 }}>{hotel.isFeatured ? 'â­ Yes' : 'No'}</span></td>
                   <td style={{ padding: '14px 20px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       {hotel.status === 'PENDING' && <button onClick={() => approveHotel(hotel.id)} style={{ padding: '6px 14px', borderRadius: '8px', border: 'none', background: '#22C55E', color: 'white', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}>Approve</button>}

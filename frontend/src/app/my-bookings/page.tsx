@@ -31,10 +31,10 @@ export default function MyBookingsPage() {
 
   return (
     <div className="container" style={{ padding: '32px 24px', maxWidth: '900px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '8px' }}>My Bookings</h1>
+      <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 900, marginBottom: '8px' }}>My Bookings</h1>
       <p style={{ color: '#64748B', marginBottom: '32px' }}>Manage your upcoming and past reservations</p>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {['all', 'confirmed', 'pending', 'cancelled', 'completed'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '8px 20px', borderRadius: '999px', border: 'none', fontWeight: 600, fontSize: '0.85rem',
@@ -50,7 +50,7 @@ export default function MyBookingsPage() {
         <div>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: '120px', borderRadius: '16px', marginBottom: '16px' }} />)}</div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>ðŸ“‹</div>
           <h3 style={{ fontWeight: 700, marginBottom: '8px' }}>No bookings found</h3>
           <p style={{ color: '#64748B', marginBottom: '24px' }}>Start your journey by booking your first stay!</p>
           <Link href="/search" className="btn btn-primary">Search Hotels</Link>
@@ -67,11 +67,11 @@ export default function MyBookingsPage() {
                     <span style={{ background: sc.bg, color: sc.color, padding: '3px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700 }}>{booking.status}</span>
                   </div>
                   <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
-                    Ref: {booking.bookingRef} • {new Date(booking.checkin).toLocaleDateString()} → {new Date(booking.checkout).toLocaleDateString()} • {booking.guests} guest{booking.guests > 1 ? 's' : ''}
+                    Ref: {booking.bookingRef} â€¢ {new Date(booking.checkin).toLocaleDateString()} â†’ {new Date(booking.checkout).toLocaleDateString()} â€¢ {booking.guests} guest{booking.guests > 1 ? 's' : ''}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FF1F71' }}>₹{booking.totalPrice?.toLocaleString()}</div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FF1F71' }}>â‚¹{booking.totalPrice?.toLocaleString()}</div>
                   <div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>incl. taxes</div>
                 </div>
               </div>

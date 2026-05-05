@@ -17,7 +17,7 @@ export default function OffersPage() {
     <>
       <section style={{ background: 'linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%)', padding: '80px 0 60px' }}>
         <div className="container" style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '16px' }}>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', fontWeight: 900, marginBottom: '16px' }}>
             Exclusive <span style={{ background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Offers</span>
           </h1>
           <p style={{ color: '#64748B', fontSize: '1.15rem', maxWidth: '600px', margin: '0 auto' }}>Save more with these handpicked deals and coupon codes</p>
@@ -32,12 +32,12 @@ export default function OffersPage() {
                 <div style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '8px' }}>{offer.discount}% OFF</div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '8px' }}>{offer.title}</h3>
                 <p style={{ opacity: 0.9, marginBottom: '8px', lineHeight: 1.5 }}>{offer.description}</p>
-                {offer.minBooking && <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '4px' }}>Min. booking: ₹{offer.minBooking}</p>}
-                {offer.maxDiscount && <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '16px' }}>Max. discount: ₹{offer.maxDiscount}</p>}
+                {offer.minBooking && <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '4px' }}>Min. booking: â‚¹{offer.minBooking}</p>}
+                {offer.maxDiscount && <p style={{ opacity: 0.7, fontSize: '0.85rem', marginBottom: '16px' }}>Max. discount: â‚¹{offer.maxDiscount}</p>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ background: 'rgba(255,255,255,0.2)', padding: '8px 20px', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', letterSpacing: '2px', border: '1px dashed rgba(255,255,255,0.5)', flex: 1, textAlign: 'center' }}>{offer.code}</div>
                   <button onClick={() => copyCode(offer.code)} style={{ background: 'white', color: '#1A1A2E', border: 'none', borderRadius: '10px', padding: '8px 20px', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>
-                    {copied === offer.code ? '✓ Copied!' : 'Copy'}
+                    {copied === offer.code ? 'âœ“ Copied!' : 'Copy'}
                   </button>
                 </div>
                 <p style={{ opacity: 0.6, fontSize: '0.75rem', marginTop: '12px' }}>
@@ -48,7 +48,7 @@ export default function OffersPage() {
           </div>
           {offers.length === 0 && (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🎁</div>
+              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>ðŸŽ</div>
               <p style={{ color: '#64748B' }}>No offers available right now. Check back soon!</p>
             </div>
           )}

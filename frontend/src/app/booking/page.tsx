@@ -107,16 +107,16 @@ function BookingContent() {
   if (confirmed) return (
     <div className="container" style={{ padding: '80px 24px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
       <div style={{ background: 'white', borderRadius: '24px', padding: '48px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 24px' }}>✅</div>
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '8px' }}>Booking Confirmed!</h1>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 24px' }}>âœ…</div>
+        <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 900, marginBottom: '8px' }}>Booking Confirmed!</h1>
         <p style={{ color: '#64748B', marginBottom: '24px' }}>Your reservation has been confirmed.</p>
         <div style={{ background: '#FFF8F9', borderRadius: '16px', padding: '24px', textAlign: 'left', marginBottom: '24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Booking Ref</span><div style={{ fontWeight: 700, color: '#FF1F71' }}>{confirmed.bookingRef}</div></div>
             <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Hotel</span><div style={{ fontWeight: 600 }}>{confirmed.hotelName || hotel?.name}</div></div>
             <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Check-in</span><div style={{ fontWeight: 600 }}>{new Date(confirmed.checkin).toLocaleDateString()}</div></div>
             <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Check-out</span><div style={{ fontWeight: 600 }}>{new Date(confirmed.checkout).toLocaleDateString()}</div></div>
-            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Total</span><div style={{ fontWeight: 700, fontSize: '1.2rem', color: '#FF1F71' }}>₹{confirmed.totalPrice?.toLocaleString()}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Total</span><div style={{ fontWeight: 700, fontSize: '1.2rem', color: '#FF1F71' }}>â‚¹{confirmed.totalPrice?.toLocaleString()}</div></div>
             <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Status</span><div className="badge badge-success">Confirmed</div></div>
           </div>
         </div>
@@ -130,16 +130,16 @@ function BookingContent() {
 
   return (
     <div className="container" style={{ padding: '32px 24px', maxWidth: '1000px', margin: '0 auto' }}>
-      <Link href={hotel ? '/hotel/' + hotel.id : '/search'} style={{ color: '#FF1F71', fontSize: '0.9rem', fontWeight: 600, marginBottom: '24px', display: 'inline-block' }}>← Back</Link>
+      <Link href={hotel ? '/hotel/' + hotel.id : '/search'} style={{ color: '#FF1F71', fontSize: '0.9rem', fontWeight: 600, marginBottom: '24px', display: 'inline-block' }}>â† Back</Link>
       <h1 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '32px' }}>Complete Your Booking</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
         <div>
           {/* Guest Details */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: '24px' }}>
             <h2 style={{ fontWeight: 700, marginBottom: '20px' }}>Guest Details</h2>
             {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '12px', marginBottom: '16px', color: '#EF4444', fontSize: '0.9rem' }}>{error}</div>}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div className="input-group"><label>Full Name *</label><input type="text" value={guestName} onChange={e => setGuestName(e.target.value)} required /></div>
               <div className="input-group"><label>Email *</label><input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} required /></div>
               <div className="input-group"><label>Phone</label><input type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)} /></div>
@@ -150,7 +150,7 @@ function BookingContent() {
           {/* Dates */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: '24px' }}>
             <h2 style={{ fontWeight: 700, marginBottom: '20px' }}>Stay Dates</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div className="input-group"><label>Check-in *</label><input type="date" value={checkin} onChange={e => setCheckin(e.target.value)} required /></div>
               <div className="input-group"><label>Check-out *</label><input type="date" value={checkout} onChange={e => setCheckout(e.target.value)} required /></div>
             </div>
@@ -172,33 +172,33 @@ function BookingContent() {
             <h3 style={{ fontWeight: 700, marginBottom: '16px' }}>Price Summary</h3>
             <div style={{ padding: '16px', background: '#FFF8F9', borderRadius: '12px', marginBottom: '20px' }}>
               <div style={{ fontWeight: 600, marginBottom: '4px' }}>{hotel?.name}</div>
-              <div style={{ color: '#64748B', fontSize: '0.85rem' }}>{room?.type} • {nights} night{nights > 1 ? 's' : ''}</div>
+              <div style={{ color: '#64748B', fontSize: '0.85rem' }}>{room?.type} â€¢ {nights} night{nights > 1 ? 's' : ''}</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                 <span style={{ color: '#64748B' }}>Room ({nights} night{nights > 1 ? 's' : ''})</span>
-                <span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>â‚¹{subtotal.toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                 <span style={{ color: '#64748B' }}>Taxes & Fees (18%)</span>
-                <span style={{ fontWeight: 600 }}>₹{taxes.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>â‚¹{taxes.toLocaleString()}</span>
               </div>
               {discount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#22C55E' }}>
                   <span>Coupon Discount</span>
-                  <span style={{ fontWeight: 600 }}>-₹{discount.toLocaleString()}</span>
+                  <span style={{ fontWeight: 600 }}>-â‚¹{discount.toLocaleString()}</span>
                 </div>
               )}
               <div style={{ borderTop: '1.5px solid #F1E4E8', paddingTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Total</span>
-                <span style={{ fontWeight: 900, fontSize: '1.3rem', color: '#FF1F71' }}>₹{total.toLocaleString()}</span>
+                <span style={{ fontWeight: 900, fontSize: '1.3rem', color: '#FF1F71' }}>â‚¹{total.toLocaleString()}</span>
               </div>
             </div>
             <button onClick={handleBooking} className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={booking}>
               {booking ? 'Processing...' : 'Confirm Booking'}
             </button>
             <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '0.8rem', color: '#94A3B8' }}>
-              ✓ Pay at hotel • ✓ Free cancellation
+              âœ“ Pay at hotel â€¢ âœ“ Free cancellation
             </div>
           </div>
         </div>

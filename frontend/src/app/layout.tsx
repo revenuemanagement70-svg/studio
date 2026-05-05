@@ -1,7 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Staylo.in - India's #1 Hotel Booking Platform",
@@ -14,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Header />
-        <main style={{ paddingTop: '72px', minHeight: '100vh' }}>
+        <main style={{ paddingTop: '64px', minHeight: '100vh' }}>
           {children}
         </main>
         <Footer />

@@ -19,20 +19,20 @@ export default function AdminFinancePage() {
     <div>
       <h1 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px' }}>Finance Overview</h1>
       <p style={{ color: '#64748B', marginBottom: '32px' }}>Platform financial overview and commission tracking</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         <div style={{ background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', borderRadius: '20px', padding: '32px', color: 'white' }}>
           <div style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '12px' }}>Total Revenue</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>₹{(finance?.totalRevenue || 0).toLocaleString()}</div>
+          <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 900 }}>â‚¹{(finance?.totalRevenue || 0).toLocaleString()}</div>
           <div style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: '8px' }}>{finance?.totalBookings || 0} bookings</div>
         </div>
         <div style={{ background: 'linear-gradient(135deg, #059669, #10B981)', borderRadius: '20px', padding: '32px', color: 'white' }}>
           <div style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '12px' }}>Commission Earned</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>₹{(finance?.totalCommission || 0).toLocaleString()}</div>
+          <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 900 }}>â‚¹{(finance?.totalCommission || 0).toLocaleString()}</div>
           <div style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: '8px' }}>20% commission rate</div>
         </div>
         <div style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)', borderRadius: '20px', padding: '32px', color: 'white' }}>
           <div style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '12px' }}>Partner Payouts</div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>₹{((finance?.totalRevenue || 0) - (finance?.totalCommission || 0)).toLocaleString()}</div>
+          <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 900 }}>â‚¹{((finance?.totalRevenue || 0) - (finance?.totalCommission || 0)).toLocaleString()}</div>
           <div style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: '8px' }}>80% to partners</div>
         </div>
       </div>

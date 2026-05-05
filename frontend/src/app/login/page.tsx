@@ -40,7 +40,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%)', padding: '40px 24px' }}>
-      <div style={{ width: '100%', maxWidth: '440px' }}>
+      <div style={{ width: '100%', maxWidth: '440px', width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.5rem', margin: '0 auto 16px' }}>S</div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px' }}>Welcome Back</h1>
@@ -79,9 +79,9 @@ export default function LoginPage() {
           <div style={{ marginTop: '24px', padding: '16px', background: '#F8FAFC', borderRadius: '12px' }}>
             <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', marginBottom: '8px' }}>Test Accounts:</p>
             <div style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.8 }}>
-              <div>👤 Guest: guest@staylo.in / guest123</div>
-              <div>🏢 Partner: partner@staylo.in / partner123</div>
-              <div>⚙️ Admin: admin@staylo.in / admin123</div>
+              <div>ðŸ‘¤ Guest: guest@staylo.in / guest123</div>
+              <div>ðŸ¢ Partner: partner@staylo.in / partner123</div>
+              <div>âš™ï¸ Admin: admin@staylo.in / admin123</div>
             </div>
           </div>
         </div>

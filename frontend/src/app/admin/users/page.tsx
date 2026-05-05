@@ -32,7 +32,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
       {loading ? <div className="skeleton" style={{ height: '400px', borderRadius: '16px' }} /> : (
-        <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: 'white', borderRadius: '16px', overflow: 'auto', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
               <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem', color: '#64748B' }}>User</th>
