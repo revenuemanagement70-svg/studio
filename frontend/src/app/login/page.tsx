@@ -79,9 +79,9 @@ export default function LoginPage() {
           <div style={{ marginTop: '24px', padding: '16px', background: '#F8FAFC', borderRadius: '12px' }}>
             <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', marginBottom: '8px' }}>Test Accounts:</p>
             <div style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.8 }}>
-              <div>ðŸ‘¤ Guest: guest@staylo.in / guest123</div>
-              <div>ðŸ¢ Partner: partner@staylo.in / partner123</div>
-              <div>âš™ï¸ Admin: admin@staylo.in / admin123</div>
+              <div>Ã°Å¸â€˜Â¤ Guest: guest@staylo.in / guest123</div>
+              <div>Ã°Å¸ÂÂ¢ Partner: partner@staylo.in / partner123</div>
+              <div>Ã¢Å¡â„¢Ã¯Â¸Â Admin: admin@staylo.in / admin123</div>
             </div>
           </div>
         </div>
