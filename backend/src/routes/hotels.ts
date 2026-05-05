@@ -49,7 +49,7 @@ router.get('/featured', async (_req: Request, res: Response, next: NextFunction)
 // GET /api/hotels/:id
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const hotel = await hotelService.getHotelById(req.params.id);
+    const hotel = await hotelService.getHotelById(req.params.id as string);
     res.json({ status: 'success', data: { hotel } });
   } catch (err) {
     next(err);
@@ -65,7 +65,7 @@ router.get('/:id/availability', async (req: Request, res: Response, next: NextFu
       return;
     }
     const result = await hotelService.getHotelAvailability(
-      req.params.id,
+      req.params.id as string,
       new Date(checkin as string),
       new Date(checkout as string)
     );

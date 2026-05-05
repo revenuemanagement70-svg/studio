@@ -67,7 +67,7 @@ router.put(
   requireRole('PARTNER', 'ADMIN'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const hotel = await partnerService.updateListing(req.params.id, req.user!.id, req.body);
+      const hotel = await partnerService.updateListing(req.params.id as string, req.user!.id, req.body);
       res.json({ status: 'success', data: { hotel } });
     } catch (err) {
       next(err);

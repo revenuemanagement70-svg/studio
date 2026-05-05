@@ -12,8 +12,6 @@ function parseJsonArray(val: unknown): string[] {
   return [];
 }
 
-
-
 interface SearchParams {
   city?: string;
   checkin?: string;
@@ -35,21 +33,19 @@ export async function searchHotels(params: SearchParams) {
   };
 
   if (city) {
-    where.city = { contains: city, mode: 'insensitive' };
+    where.city = { contains: city };
   }
 
   if (guests) {
     where.rooms = { some: { capacity: { gte: guests } } };
   }
 
-  // Amenities filter handled post-query for SQLite compatibility
-
   const [hotels, total] = await Promise.all([
     prisma.hotel.findMany({
       where,
       include: {
         rooms: {
-          select: { id: true, type: true, capacity: true, basePrice: true, totalRooms: true },
+          select: { id: true, type: true, capacity: true, basePrice: true, totalRooms: true, amenities: true },
         },
       },
       skip,
@@ -138,7 +134,7 @@ export async function getFeaturedHotels() {
     where: { status: 'ACTIVE', rating: { gte: 4.0 } },
     include: {
       rooms: {
-        select: { basePrice: true },
+        select: { basePrice: true, amenities: true },
         take: 1,
         orderBy: { basePrice: 'asc' },
       },

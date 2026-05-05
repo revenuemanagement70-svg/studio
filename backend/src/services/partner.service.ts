@@ -51,16 +51,20 @@ export async function getPartnerListings(partnerId: string) {
   });
 }
 
-export async function updateListing(id: string, partnerId: string, data: Partial<OnboardHotelInput>) {
+export async function updateListing(id: string, partnerId: string, data: Record<string, any>) {
   const hotel = await prisma.hotel.findUnique({ where: { id } });
   if (!hotel) throw new AppError(404, 'Hotel not found');
   if (hotel.partnerId !== partnerId) throw new AppError(403, 'Not your listing');
 
-  const { rooms, ...hotelData } = data;
+  const { rooms, partnerId: _pid, images, amenities, ...rest } = data;
 
   return prisma.hotel.update({
     where: { id },
-    data: hotelData,
+    data: {
+      ...rest,
+      ...(images ? { images: JSON.stringify(images) } : {}),
+      ...(amenities ? { amenities: JSON.stringify(amenities) } : {}),
+    },
     include: { rooms: true },
   });
 }

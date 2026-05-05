@@ -44,7 +44,7 @@ router.get('/my', authenticate, async (req: Request, res: Response, next: NextFu
 // GET /api/bookings/:id
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const booking = await bookingService.getBookingById(req.params.id);
+    const booking = await bookingService.getBookingById(req.params.id as string);
     res.json({ status: 'success', data: { booking } });
   } catch (err) {
     next(err);
@@ -54,7 +54,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 // PATCH /api/bookings/:id/cancel
 router.patch('/:id/cancel', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const booking = await bookingService.cancelBooking(req.params.id, req.user!.id);
+    const booking = await bookingService.cancelBooking(req.params.id as string, req.user!.id);
     res.json({ status: 'success', data: { booking } });
   } catch (err) {
     next(err);
