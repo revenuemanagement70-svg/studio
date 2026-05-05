@@ -7,6 +7,11 @@ import authRoutes from './routes/auth';
 import hotelRoutes from './routes/hotels';
 import bookingRoutes from './routes/bookings';
 import partnerRoutes from './routes/partners';
+import cityRoutes from './routes/cities';
+import offerRoutes from './routes/offers';
+import reviewRoutes from './routes/reviews';
+import adminRoutes from './routes/admin';
+import extranetRoutes from './routes/extranet';
 
 dotenv.config();
 
@@ -16,9 +21,7 @@ const PORT = process.env.PORT || 4000;
 // CORS - allow multiple origins
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    // Allow Vercel previews, staylo.in, and localhost
     if (
       origin.includes('vercel.app') ||
       origin.includes('staylo.in') ||
@@ -26,7 +29,7 @@ app.use(cors({
     ) {
       return callback(null, true);
     }
-    callback(null, true); // Allow all during development
+    callback(null, true);
   },
   credentials: true,
 }));
@@ -45,11 +48,18 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes
+// Public routes
 app.use('/api/auth', authRoutes);
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/cities', cityRoutes);
+app.use('/api/offers', offerRoutes);
+app.use('/api/reviews', reviewRoutes);
+
+// Protected routes
 app.use('/api/partners', partnerRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/extranet', extranetRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

@@ -27,35 +27,47 @@ enum BookingStatus {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  phone     String?
-  password  String
-  role      Role     @default(GUEST)
-  bookings  Booking[]
-  hotels    Hotel[]  @relation("PartnerHotels")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(uuid())
+  email      String      @unique
+  name       String
+  phone      String?
+  password   String
+  avatar     String?
+  role       Role        @default(GUEST)
+  isVerified Boolean     @default(false)
+  bookings   Booking[]
+  hotels     Hotel[]     @relation("PartnerHotels")
+  reviews    Review[]
+  savedHotels SavedHotel[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
 
 model Hotel {
-  id          String      @id @default(uuid())
-  name        String
-  city        String
-  address     String
-  description String
-  images      String      @default("[]")
-  amenities   String      @default("[]")
-  rating      Float       @default(0)
-  latitude    Float?
-  longitude   Float?
-  partnerId   String?
-  partner     User?       @relation("PartnerHotels", fields: [partnerId], references: [id])
-  status      HotelStatus @default(ACTIVE)
-  rooms       Room[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String      @id @default(uuid())
+  name         String
+  city         String
+  address      String
+  description  String
+  images       String      @default("[]")
+  amenities    String      @default("[]")
+  rating       Float       @default(0)
+  starRating   Int         @default(3)
+  propertyType String      @default("Hotel")
+  policies     String      @default("{}")
+  commission   Float       @default(20.0)
+  isFeatured   Boolean     @default(false)
+  isVerified   Boolean     @default(false)
+  latitude     Float?
+  longitude    Float?
+  partnerId    String?
+  partner      User?       @relation("PartnerHotels", fields: [partnerId], references: [id])
+  status       HotelStatus @default(ACTIVE)
+  rooms        Room[]
+  reviews      Review[]
+  savedBy      SavedHotel[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@index([city])
   @@index([status])
@@ -70,6 +82,7 @@ model Room {
   basePrice    Float
   totalRooms   Int
   amenities    String             @default("[]")
+  images       String             @default("[]")
   bookings     Booking[]
   availability RoomAvailability[]
   createdAt    DateTime           @default(now())
@@ -104,10 +117,77 @@ model Booking {
   totalPrice Float
   taxes      Float
   status     BookingStatus @default(PENDING)
+  guestName  String?
+  guestEmail String?
+  guestPhone String?
+  specialRequests String?
+  paymentId  String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   @@index([userId])
   @@index([roomId])
   @@index([status])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  rating    Int
+  title     String?
+  comment   String
+  reply     String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId])
+  @@index([hotelId])
+}
+
+model SavedHotel {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  hotelId   String
+  hotel     Hotel    @relation(fields: [hotelId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId])
+}
+
+model Offer {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  title       String
+  description String
+  discount    Float
+  minBooking  Float?
+  maxDiscount Float?
+  validFrom   DateTime
+  validTill   DateTime
+  isActive    Boolean  @default(true)
+  usageLimit  Int?
+  usedCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model City {
+  id         String  @id @default(uuid())
+  name       String  @unique
+  state      String
+  image      String
+  hotelCount Int     @default(0)
+  isPopular  Boolean @default(false)
+}
+
+model Payout {
+  id          String    @id @default(uuid())
+  partnerId   String
+  amount      Float
+  period      String
+  status      String    @default("PENDING")
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
 }

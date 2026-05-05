@@ -1,112 +1,205 @@
-"use client";
-import { useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import { formatPrice, getToken, nightsBetween } from "@/lib/utils";
+'use client';
+
+import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 function BookingContent() {
-  const params = useSearchParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const hotelId = searchParams.get('hotelId');
+  const roomId = searchParams.get('roomId');
+  const checkinParam = searchParams.get('checkin') || '';
+  const checkoutParam = searchParams.get('checkout') || '';
+  const guestsParam = parseInt(searchParams.get('guests') || '2');
 
-  const hotelName = params.get("hotelName") || "";
-  const roomType = params.get("roomType") || "";
-  const roomId = params.get("roomId") || "";
-  const price = Number(params.get("price") || 0);
-  const checkin = params.get("checkin") || "";
-  const checkout = params.get("checkout") || "";
-  const guests = Number(params.get("guests") || 2);
+  const [hotel, setHotel] = useState<any>(null);
+  const [room, setRoom] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [booking, setBooking] = useState(false);
+  const [confirmed, setConfirmed] = useState<any>(null);
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [checkin, setCheckin] = useState(checkinParam);
+  const [checkout, setCheckout] = useState(checkoutParam);
+  const [coupon, setCoupon] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [error, setError] = useState('');
 
-  const nights = checkin && checkout ? nightsBetween(checkin, checkout) : 1;
-  const subtotal = price * nights;
+  useEffect(() => {
+    if (!hotelId) return;
+    fetch(API_URL + '/hotels/' + hotelId)
+      .then(r => r.json())
+      .then(data => {
+        const h = data.data || data;
+        setHotel(h);
+        if (roomId && h.rooms) {
+          const r = h.rooms.find((rm: any) => rm.id === roomId);
+          setRoom(r || h.rooms[0]);
+        } else if (h.rooms?.[0]) {
+          setRoom(h.rooms[0]);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+    
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const u = JSON.parse(userData);
+        setGuestName(u.name || '');
+        setGuestEmail(u.email || '');
+      } catch {}
+    }
+  }, [hotelId, roomId]);
+
+  const nights = checkin && checkout ? Math.max(1, Math.ceil((new Date(checkout).getTime() - new Date(checkin).getTime()) / 86400000)) : 1;
+  const roomPrice = room?.basePrice || 0;
+  const subtotal = roomPrice * nights;
   const taxes = Math.round(subtotal * 0.18);
-  const total = subtotal + taxes;
+  const total = subtotal + taxes - discount;
 
-  const handleConfirm = async () => {
-    setLoading(true);
-    setError("");
+  const applyCoupon = async () => {
     try {
-      const token = getToken();
-      const booking = await api<{ booking: { id: string; bookingRef: string } }>("/bookings", {
-        method: "POST",
-        token: token || "",
-        body: { roomId, checkin, checkout, guests },
+      const res = await fetch(API_URL + '/offers/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: coupon, amount: subtotal }),
       });
-      router.push("/booking/confirmation?ref=" + booking.booking.bookingRef + "&id=" + booking.booking.id);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Booking failed");
-    } finally {
-      setLoading(false);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setDiscount(data.data.discountAmount);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8">Complete Your Booking</h1>
+  const handleBooking = async () => {
+    if (!guestName || !guestEmail || !checkin || !checkout) {
+      setError('Please fill all required fields');
+      return;
+    }
+    setBooking(true);
+    setError('');
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) { router.push('/login'); return; }
+      const res = await fetch(API_URL + '/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ roomId: room.id, checkin, checkout, guests: guestsParam, guestName, guestEmail, guestPhone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Booking failed');
+      setConfirmed(data.data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBooking(false);
+    }
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Booking Details */}
-        <div className="lg:col-span-3 space-y-6">
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Booking Details</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Hotel</span>
-                <span className="text-white font-medium">{hotelName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Room Type</span>
-                <span className="text-white">{roomType}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Check-in</span>
-                <span className="text-white">{checkin}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Check-out</span>
-                <span className="text-white">{checkout}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Guests</span>
-                <span className="text-white">{guests}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Duration</span>
-                <span className="text-white">{nights} night{nights > 1 ? 's' : ''}</span>
-              </div>
+  if (loading) return <div className="container" style={{ padding: '100px 24px', textAlign: 'center' }}><div className="skeleton" style={{ width: '300px', height: '30px', margin: '0 auto' }} /></div>;
+
+  if (confirmed) return (
+    <div className="container" style={{ padding: '80px 24px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+      <div style={{ background: 'white', borderRadius: '24px', padding: '48px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', margin: '0 auto 24px' }}>✅</div>
+        <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '8px' }}>Booking Confirmed!</h1>
+        <p style={{ color: '#64748B', marginBottom: '24px' }}>Your reservation has been confirmed.</p>
+        <div style={{ background: '#FFF8F9', borderRadius: '16px', padding: '24px', textAlign: 'left', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Booking Ref</span><div style={{ fontWeight: 700, color: '#FF1F71' }}>{confirmed.bookingRef}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Hotel</span><div style={{ fontWeight: 600 }}>{confirmed.hotelName || hotel?.name}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Check-in</span><div style={{ fontWeight: 600 }}>{new Date(confirmed.checkin).toLocaleDateString()}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Check-out</span><div style={{ fontWeight: 600 }}>{new Date(confirmed.checkout).toLocaleDateString()}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Total</span><div style={{ fontWeight: 700, fontSize: '1.2rem', color: '#FF1F71' }}>₹{confirmed.totalPrice?.toLocaleString()}</div></div>
+            <div><span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>Status</span><div className="badge badge-success">Confirmed</div></div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          <Link href="/my-bookings" className="btn btn-primary">View My Bookings</Link>
+          <Link href="/" className="btn btn-outline">Back to Home</Link>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container" style={{ padding: '32px 24px', maxWidth: '1000px', margin: '0 auto' }}>
+      <Link href={hotel ? '/hotel/' + hotel.id : '/search'} style={{ color: '#FF1F71', fontSize: '0.9rem', fontWeight: 600, marginBottom: '24px', display: 'inline-block' }}>← Back</Link>
+      <h1 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '32px' }}>Complete Your Booking</h1>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '40px' }}>
+        <div>
+          {/* Guest Details */}
+          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: '24px' }}>
+            <h2 style={{ fontWeight: 700, marginBottom: '20px' }}>Guest Details</h2>
+            {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '12px', marginBottom: '16px', color: '#EF4444', fontSize: '0.9rem' }}>{error}</div>}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="input-group"><label>Full Name *</label><input type="text" value={guestName} onChange={e => setGuestName(e.target.value)} required /></div>
+              <div className="input-group"><label>Email *</label><input type="email" value={guestEmail} onChange={e => setGuestEmail(e.target.value)} required /></div>
+              <div className="input-group"><label>Phone</label><input type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)} /></div>
+              <div className="input-group"><label>Guests</label><input type="number" value={guestsParam} readOnly /></div>
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: '24px' }}>
+            <h2 style={{ fontWeight: 700, marginBottom: '20px' }}>Stay Dates</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="input-group"><label>Check-in *</label><input type="date" value={checkin} onChange={e => setCheckin(e.target.value)} required /></div>
+              <div className="input-group"><label>Check-out *</label><input type="date" value={checkout} onChange={e => setCheckout(e.target.value)} required /></div>
+            </div>
+          </div>
+
+          {/* Coupon */}
+          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+            <h2 style={{ fontWeight: 700, marginBottom: '20px' }}>Have a Coupon?</h2>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input type="text" value={coupon} onChange={e => setCoupon(e.target.value.toUpperCase())} placeholder="Enter coupon code" style={{ flex: 1, padding: '12px 16px', border: '1.5px solid #F1E4E8', borderRadius: '10px', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: 600, letterSpacing: '1px' }} />
+              <button onClick={applyCoupon} className="btn btn-outline">Apply</button>
             </div>
           </div>
         </div>
 
         {/* Price Summary */}
-        <div className="lg:col-span-2">
-          <div className="glass-card p-6 sticky top-24">
-            <h3 className="text-lg font-semibold text-white mb-4">Price Summary</h3>
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">{formatPrice(price)} x {nights} night{nights > 1 ? 's' : ''}</span>
-                <span className="text-white">{formatPrice(subtotal)}</span>
+        <div>
+          <div style={{ position: 'sticky', top: '96px', background: 'white', borderRadius: '20px', padding: '28px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', border: '1.5px solid #FDE8ED' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: '16px' }}>Price Summary</h3>
+            <div style={{ padding: '16px', background: '#FFF8F9', borderRadius: '12px', marginBottom: '20px' }}>
+              <div style={{ fontWeight: 600, marginBottom: '4px' }}>{hotel?.name}</div>
+              <div style={{ color: '#64748B', fontSize: '0.85rem' }}>{room?.type} • {nights} night{nights > 1 ? 's' : ''}</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ color: '#64748B' }}>Room ({nights} night{nights > 1 ? 's' : ''})</span>
+                <span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Taxes & fees (18% GST)</span>
-                <span className="text-white">{formatPrice(taxes)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                <span style={{ color: '#64748B' }}>Taxes & Fees (18%)</span>
+                <span style={{ fontWeight: 600 }}>₹{taxes.toLocaleString()}</span>
               </div>
-              <div className="border-t border-slate-700/50 pt-3 flex justify-between">
-                <span className="text-white font-semibold">Total</span>
-                <span className="text-indigo-400 font-bold text-xl">{formatPrice(total)}</span>
+              {discount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#22C55E' }}>
+                  <span>Coupon Discount</span>
+                  <span style={{ fontWeight: 600 }}>-₹{discount.toLocaleString()}</span>
+                </div>
+              )}
+              <div style={{ borderTop: '1.5px solid #F1E4E8', paddingTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Total</span>
+                <span style={{ fontWeight: 900, fontSize: '1.3rem', color: '#FF1F71' }}>₹{total.toLocaleString()}</span>
               </div>
             </div>
-
-            {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-
-            <button onClick={handleConfirm} disabled={loading} className="btn-primary w-full !py-3 disabled:opacity-50">
-              {loading ? "Processing..." : "Confirm Booking"}
+            <button onClick={handleBooking} className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={booking}>
+              {booking ? 'Processing...' : 'Confirm Booking'}
             </button>
-
-            <p className="text-slate-500 text-xs mt-3 text-center">
-              Free cancellation up to 24 hours before check-in
-            </p>
+            <div style={{ textAlign: 'center', marginTop: '12px', fontSize: '0.8rem', color: '#94A3B8' }}>
+              ✓ Pay at hotel • ✓ Free cancellation
+            </div>
           </div>
         </div>
       </div>
@@ -116,7 +209,7 @@ function BookingContent() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="max-w-3xl mx-auto px-4 py-8"><div className="h-8 w-48 bg-slate-800 rounded animate-shimmer" /></div>}>
+    <Suspense fallback={<div className="container" style={{ padding: '100px 0', textAlign: 'center' }}>Loading...</div>}>
       <BookingContent />
     </Suspense>
   );

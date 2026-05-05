@@ -1,90 +1,82 @@
-"use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { api } from "@/lib/api";
-import { Booking } from "@/lib/types";
-import { formatPrice, formatDate, getToken } from "@/lib/utils";
+'use client';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export default function MyBookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const router = useRouter();
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) { setLoading(false); return; }
-    api<{ bookings: Booking[] }>("/bookings/my", { token })
-      .then((d) => setBookings(d.bookings))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) { router.push('/login'); return; }
+    fetch(API_URL + '/bookings', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(r => r.json())
+      .then(data => { setBookings(data.data || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [router]);
 
-  const handleCancel = async (id: string) => {
-    if (!confirm("Are you sure you want to cancel this booking?")) return;
-    const token = getToken();
-    try {
-      await api("/bookings/" + id + "/cancel", { method: "PATCH", token: token || "" });
-      setBookings(b => b.map(booking => booking.id === id ? { ...booking, status: 'CANCELLED' } : booking));
-    } catch {}
+  const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter.toUpperCase());
+
+  const statusColor = (s: string) => {
+    if (s === 'CONFIRMED') return { bg: '#ECFDF5', color: '#22C55E' };
+    if (s === 'PENDING') return { bg: '#FEF3C7', color: '#F59E0B' };
+    if (s === 'CANCELLED') return { bg: '#FEF2F2', color: '#EF4444' };
+    return { bg: '#F0F9FF', color: '#3B82F6' };
   };
-
-  const statusColors: Record<string, string> = {
-    CONFIRMED: "bg-green-500/20 text-green-400",
-    PENDING: "bg-amber-500/20 text-amber-400",
-    CANCELLED: "bg-red-500/20 text-red-400",
-    COMPLETED: "bg-blue-500/20 text-blue-400",
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-white mb-8">My Bookings</h1>
-        {[1,2,3].map(i => (
-          <div key={i} className="glass-card p-6 mb-4">
-            <div className="h-6 w-1/3 bg-slate-800 rounded animate-shimmer mb-2" />
-            <div className="h-4 w-1/4 bg-slate-800 rounded animate-shimmer" />
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-white mb-8">My Bookings</h1>
+    <div className="container" style={{ padding: '32px 24px', maxWidth: '900px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '8px' }}>My Bookings</h1>
+      <p style={{ color: '#64748B', marginBottom: '32px' }}>Manage your upcoming and past reservations</p>
 
-      {bookings.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">✈️</div>
-          <h3 className="text-xl text-white font-semibold mb-2">No bookings yet</h3>
-          <p className="text-slate-400 mb-6">Start exploring and book your perfect stay!</p>
-          <Link href="/search" className="btn-primary">Browse Hotels</Link>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        {['all', 'confirmed', 'pending', 'cancelled', 'completed'].map(f => (
+          <button key={f} onClick={() => setFilter(f)} style={{
+            padding: '8px 20px', borderRadius: '999px', border: 'none', fontWeight: 600, fontSize: '0.85rem',
+            background: filter === f ? 'linear-gradient(135deg, #FF1F71, #FF7E5F)' : '#FFF8F9',
+            color: filter === f ? 'white' : '#64748B', cursor: 'pointer', transition: 'all 0.3s', fontFamily: 'inherit',
+          }}>
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: '120px', borderRadius: '16px', marginBottom: '16px' }} />)}</div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
+          <h3 style={{ fontWeight: 700, marginBottom: '8px' }}>No bookings found</h3>
+          <p style={{ color: '#64748B', marginBottom: '24px' }}>Start your journey by booking your first stay!</p>
+          <Link href="/search" className="btn btn-primary">Search Hotels</Link>
         </div>
       ) : (
-        <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div key={booking.id} className="glass-card p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {filtered.map(booking => {
+            const sc = statusColor(booking.status);
+            return (
+              <div key={booking.id} style={{ background: 'white', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #F1E4E8' }}>
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-white font-semibold text-lg">{booking.hotelName}</h3>
-                    <span className={"px-2.5 py-0.5 rounded-full text-xs font-medium " + (statusColors[booking.status] || "bg-slate-700 text-slate-300")}>{booking.status}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: '1.05rem' }}>{booking.hotelName}</h3>
+                    <span style={{ background: sc.bg, color: sc.color, padding: '3px 12px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700 }}>{booking.status}</span>
                   </div>
-                  <p className="text-slate-400 text-sm">
-                    {booking.room?.type} · {formatDate(booking.checkin)} → {formatDate(booking.checkout)} · {booking.guests} guest{booking.guests > 1 ? 's' : ''}
+                  <p style={{ color: '#64748B', fontSize: '0.85rem' }}>
+                    Ref: {booking.bookingRef} • {new Date(booking.checkin).toLocaleDateString()} → {new Date(booking.checkout).toLocaleDateString()} • {booking.guests} guest{booking.guests > 1 ? 's' : ''}
                   </p>
-                  <p className="text-slate-500 text-xs mt-1">Ref: {booking.bookingRef}</p>
                 </div>
-                <div className="text-right flex flex-col items-end gap-2">
-                  <div className="text-indigo-400 font-bold text-lg">{formatPrice(booking.totalPrice + booking.taxes)}</div>
-                  {booking.status === 'CONFIRMED' && (
-                    <button onClick={() => handleCancel(booking.id)} className="text-xs text-red-400 hover:text-red-300 transition-colors">
-                      Cancel Booking
-                    </button>
-                  )}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FF1F71' }}>₹{booking.totalPrice?.toLocaleString()}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>incl. taxes</div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

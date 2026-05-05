@@ -1,78 +1,80 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { api } from "@/lib/api";
-import { setToken, setUser } from "@/lib/utils";
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("GUEST");
-  const [error, setError] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setError("");
     try {
-      const data = await api<{ user: { id: string; name: string; email: string; role: string }; token: string }>("/auth/register", {
-        method: "POST",
-        body: { name, email, password, role },
+      const res = await fetch(API_URL + '/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password }),
       });
-      setToken(data.token);
-      setUser(data.user);
-      router.push("/");
-      router.refresh();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Registration failed');
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+      router.push('/');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
-      <div className="glass-card w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-slate-400 text-sm">Join Staylo and start booking</p>
+    <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%)', padding: '40px 24px' }}>
+      <div style={{ width: '100%', maxWidth: '440px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.5rem', margin: '0 auto 16px' }}>S</div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px' }}>Create Account</h1>
+          <p style={{ color: '#64748B' }}>Join Staylo and start booking your perfect stay</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Full Name</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="input-field" placeholder="John Doe" required />
+        <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+          {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px', color: '#EF4444', fontSize: '0.9rem' }}>{error}</div>}
+          <form onSubmit={handleRegister}>
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label>Full Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" required />
+            </div>
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label>Email Address</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+            </div>
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label>Phone Number</label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91-98765-43210" />
+            </div>
+            <div className="input-group" style={{ marginBottom: '24px' }}>
+              <label>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min 6 characters" required minLength={6} />
+            </div>
+            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <p style={{ color: '#64748B', fontSize: '0.9rem' }}>
+              Already have an account? <Link href="/login" style={{ color: '#FF1F71', fontWeight: 600 }}>Sign In</Link>
+            </p>
           </div>
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input-field" placeholder="you@example.com" required />
-          </div>
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="input-field" placeholder="Min 6 characters" required minLength={6} />
-          </div>
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Account Type</label>
-            <select value={role} onChange={e => setRole(e.target.value)} className="input-field">
-              <option value="GUEST">Guest — Book hotels</option>
-              <option value="PARTNER">Partner — List your property</option>
-            </select>
-          </div>
-
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <button type="submit" disabled={loading} className="btn-primary w-full !py-3 disabled:opacity-50">
-            {loading ? "Creating Account..." : "Create Account"}
-          </button>
-        </form>
-
-        <p className="text-center text-slate-400 text-sm mt-6">
-          Already have an account? <Link href="/login" className="text-indigo-400 hover:text-indigo-300">Log in</Link>
-        </p>
+        </div>
       </div>
     </div>
   );

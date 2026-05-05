@@ -1,84 +1,91 @@
-"use client";
-import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { api } from "@/lib/api";
-import { setToken, setUser } from "@/lib/utils";
+'use client';
 
-function LoginContent() {
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setError("");
     try {
-      const data = await api<{ user: { id: string; name: string; email: string; role: string }; token: string }>("/auth/login", {
-        method: "POST",
-        body: { email, password },
+      const res = await fetch(API_URL + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
-      setToken(data.token);
-      setUser(data.user);
-      router.push(redirect);
-      router.refresh();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Login failed');
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+      const role = data.data.user.role;
+      if (role === 'ADMIN') router.push('/admin');
+      else if (role === 'PARTNER') router.push('/extranet');
+      else router.push('/');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
-      <div className="glass-card w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-400 text-sm">Log in to your Staylo account</p>
+    <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%)', padding: '40px 24px' }}>
+      <div style={{ width: '100%', maxWidth: '440px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.5rem', margin: '0 auto 16px' }}>S</div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px' }}>Welcome Back</h1>
+          <p style={{ color: '#64748B' }}>Sign in to your Staylo account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input-field" placeholder="you@example.com" required />
+        <div style={{ background: 'white', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+          {error && (
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px', color: '#EF4444', fontSize: '0.9rem', fontWeight: 500 }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin}>
+            <div className="input-group" style={{ marginBottom: '16px' }}>
+              <label>Email Address</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+            </div>
+            <div className="input-group" style={{ marginBottom: '24px' }}>
+              <label>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required />
+            </div>
+            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <p style={{ color: '#64748B', fontSize: '0.9rem' }}>
+              Don&apos;t have an account?{' '}
+              <Link href="/register" style={{ color: '#FF1F71', fontWeight: 600 }}>Sign Up</Link>
+            </p>
           </div>
-          <div>
-            <label className="text-sm text-slate-400 mb-1 block">Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="input-field" placeholder="••••••••" required />
-          </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <button type="submit" disabled={loading} className="btn-primary w-full !py-3 disabled:opacity-50">
-            {loading ? "Logging in..." : "Log In"}
-          </button>
-        </form>
-
-        <p className="text-center text-slate-400 text-sm mt-6">
-          Don&apos;t have an account? <Link href="/register" className="text-indigo-400 hover:text-indigo-300">Sign up</Link>
-        </p>
-
-        <div className="mt-6 border-t border-slate-700/50 pt-4">
-          <p className="text-xs text-slate-500 text-center mb-2">Demo Accounts</p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button onClick={() => { setEmail("guest@staylo.in"); setPassword("guest123"); }} className="btn-secondary !py-1.5 !px-2 !text-xs">Guest Login</button>
-            <button onClick={() => { setEmail("partner@staylo.in"); setPassword("partner123"); }} className="btn-secondary !py-1.5 !px-2 !text-xs">Partner Login</button>
+          {/* Test Accounts */}
+          <div style={{ marginTop: '24px', padding: '16px', background: '#F8FAFC', borderRadius: '12px' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', marginBottom: '8px' }}>Test Accounts:</p>
+            <div style={{ fontSize: '0.75rem', color: '#94A3B8', lineHeight: 1.8 }}>
+              <div>👤 Guest: guest@staylo.in / guest123</div>
+              <div>🏢 Partner: partner@staylo.in / partner123</div>
+              <div>⚙️ Admin: admin@staylo.in / admin123</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><div className="h-8 w-48 bg-slate-800 rounded animate-shimmer" /></div>}>
-      <LoginContent />
-    </Suspense>
   );
 }
