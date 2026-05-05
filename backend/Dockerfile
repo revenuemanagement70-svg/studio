@@ -7,4 +7,4 @@ RUN npx prisma generate
 COPY . .
 RUN npm run build
 EXPOSE 4000
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npx tsx prisma/seed.ts && node dist/server.js"]
