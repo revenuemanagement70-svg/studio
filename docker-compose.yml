@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: staylo
+      POSTGRES_USER: staylo
+      POSTGRES_PASSWORD: staylo123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://staylo:staylo123@postgres:5432/staylo
+      JWT_SECRET: staylo-dev-secret-key
+      PORT: "4000"
+      FRONTEND_URL: http://localhost:3000
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+
+volumes:
+  postgres_data:

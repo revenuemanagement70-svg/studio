@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  PARTNER
+  ADMIN
+}
+
+enum HotelStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  password  String
+  role      Role     @default(GUEST)
+  bookings  Booking[]
+  hotels    Hotel[]  @relation("PartnerHotels")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hotel {
+  id          String      @id @default(uuid())
+  name        String
+  city        String
+  address     String
+  description String
+  images      String      @default("[]")
+  amenities   String      @default("[]")
+  rating      Float       @default(0)
+  latitude    Float?
+  longitude   Float?
+  partnerId   String?
+  partner     User?       @relation("PartnerHotels", fields: [partnerId], references: [id])
+  status      HotelStatus @default(ACTIVE)
+  rooms       Room[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([city])
+  @@index([status])
+}
+
+model Room {
+  id           String             @id @default(uuid())
+  hotelId      String
+  hotel        Hotel              @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  type         String
+  capacity     Int
+  basePrice    Float
+  totalRooms   Int
+  amenities    String             @default("[]")
+  bookings     Booking[]
+  availability RoomAvailability[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([hotelId])
+}
+
+model RoomAvailability {
+  id             String   @id @default(uuid())
+  roomId         String
+  room           Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  date           DateTime
+  price          Float
+  roomsAvailable Int
+
+  @@unique([roomId, date])
+  @@index([roomId, date])
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  bookingRef String        @unique
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  roomId     String
+  room       Room          @relation(fields: [roomId], references: [id])
+  hotelName  String
+  checkin    DateTime
+  checkout   DateTime
+  guests     Int
+  totalPrice Float
+  taxes      Float
+  status     BookingStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([roomId])
+  @@index([status])
+}

@@ -1,0 +1,34 @@
+﻿# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+
+# Environment files
+.env
+.env.local
+
+# Database
+*.sqlite
+*.sqlite-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude/Agent docs (not needed in repo)
+claude-code-docs/
+CLAUDE.md
+AGENTS.md
+implementation_plan.md
