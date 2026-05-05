@@ -14,19 +14,19 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // CORS - allow multiple origins
-const allowedOrigins = [
-  'http://localhost:3000',
-  process.env.FRONTEND_URL,
-].filter(Boolean) as string[];
-
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(o => origin.startsWith(o) || origin.includes('vercel.app'))) {
+    // Allow Vercel previews, staylo.in, and localhost
+    if (
+      origin.includes('vercel.app') ||
+      origin.includes('staylo.in') ||
+      origin.includes('localhost')
+    ) {
       return callback(null, true);
     }
-    callback(null, true); // Allow all for now during development
+    callback(null, true); // Allow all during development
   },
   credentials: true,
 }));
@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
   })
