@@ -178,10 +178,11 @@ img { max-width: 100%; height: auto; }
   .section-header p { font-size: 0.95rem; }
   .btn-lg { padding: 14px 28px; font-size: 1rem; }
 
-  .hamburger { display: block; }
-  .desktop-nav { display: none; }
-  .desktop-actions { display: none; }
-  .desktop-phone { display: none; }
+  .hamburger { display: block !important; }
+  .desktop-nav { display: none !important; }
+  .desktop-actions { display: none !important; }
+  .desktop-phone { display: none !important; }
+  .search-divider { display: none; }
 }
 
 @media (max-width: 480px) {
