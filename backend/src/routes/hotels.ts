@@ -16,6 +16,7 @@ const searchSchema = z.object({
     amenities: z.string().optional(),
     page: z.string().optional(),
     limit: z.string().optional(),
+    sort: z.string().optional(),
   }),
 });
 

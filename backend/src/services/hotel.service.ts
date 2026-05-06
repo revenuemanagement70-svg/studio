@@ -31,7 +31,7 @@ export async function searchHotels(params: SearchParams) {
   const skip = (page - 1) * limit;
 
   const where: Prisma.HotelWhereInput = { status: 'ACTIVE' };
-  if (city) where.city = { contains: city };
+  if (city) where.city = { contains: city, mode: 'insensitive' };
   if (guests) where.rooms = { some: { capacity: { gte: guests } } };
   if (propertyType) where.propertyType = propertyType;
   if (starRating) where.starRating = { gte: starRating };
