@@ -30,7 +30,7 @@ function SearchContent() {
     if (city) params.set('city', city);
     if (sort) params.set('sort', sort);
     params.set('limit', '20');
-    fetch(API_URL + '/hotels?' + params.toString())
+    fetch(API_URL + '/hotels/search?' + params.toString())
       .then(r => r.json())
       .then(data => {
         let results = data.data?.hotels || data.data || [];
@@ -53,7 +53,7 @@ function SearchContent() {
 
   return (
     <div className="container" style={{ padding: '24px 16px' }}>
-      <Link href="/" style={{ color: '#FF1F71', fontSize: '0.85rem', fontWeight: 600 }}>← Back to Home</Link>
+      <Link href="/" style={{ color: '#FF1F71', fontSize: '0.85rem', fontWeight: 600 }}>â† Back to Home</Link>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '16px', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 800 }}>{city ? `Hotels in ${city}` : 'All Properties'}</h1>
@@ -66,12 +66,12 @@ function SearchContent() {
           </select>
           <select value={sort} onChange={e => setSort(e.target.value)} style={selectStyle}>
             <option value="rating">Top Rated</option>
-            <option value="price_asc">Price: Low→High</option>
-            <option value="price_desc">Price: High→Low</option>
+            <option value="price_asc">Price: Lowâ†’High</option>
+            <option value="price_desc">Price: Highâ†’Low</option>
             <option value="name">Name A-Z</option>
           </select>
           <button onClick={() => setShowFilters(!showFilters)} style={{ ...selectStyle, border: '1.5px solid #FF1F71', color: '#FF1F71', display: 'none' }} className="mobile-filter-btn">
-            {showFilters ? '✕ Close' : '⚙ Filters'}
+            {showFilters ? 'âœ• Close' : 'âš™ Filters'}
           </button>
         </div>
       </div>
@@ -84,7 +84,7 @@ function SearchContent() {
             <div style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Max Price</span>
-                <span style={{ color: '#FF1F71', fontWeight: 700, fontSize: '0.85rem' }}>₹{maxPrice.toLocaleString()}</span>
+                <span style={{ color: '#FF1F71', fontWeight: 700, fontSize: '0.85rem' }}>â‚¹{maxPrice.toLocaleString()}</span>
               </div>
               <input type="range" min="500" max="15000" step="500" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '100%', accentColor: '#FF1F71' }} />
             </div>
@@ -93,7 +93,7 @@ function SearchContent() {
               {[5,4,3,2,1].map(star => (
                 <label key={star} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>
                   <input type="radio" name="star" checked={starFilter === star} onChange={() => setStarFilter(starFilter === star ? null : star)} style={{ accentColor: '#FF1F71' }} />
-                  {'⭐'.repeat(star)} {star < 5 && '& up'}
+                  {'â­'.repeat(star)} {star < 5 && '& up'}
                 </label>
               ))}
               {starFilter && <button onClick={() => setStarFilter(null)} style={{ color: '#FF1F71', fontSize: '0.8rem', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, marginTop: '4px' }}>Clear</button>}
@@ -109,7 +109,7 @@ function SearchContent() {
             </div>
           ) : hotels.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🏨</div>
+              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>ðŸ¨</div>
               <h3 style={{ fontWeight: 700, color: '#FF1F71', marginBottom: '6px' }}>No hotels found</h3>
               <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Try adjusting your search criteria.</p>
             </div>
@@ -119,7 +119,7 @@ function SearchContent() {
                 <Link key={hotel.id} href={'/hotel/' + hotel.id} className="card" style={{ display: 'block' }}>
                   <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
                     <img src={getImages(hotel)[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'} alt={hotel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFB800', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>⭐ {hotel.rating}</div>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFB800', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>â­ {hotel.rating}</div>
                     <div style={{ position: 'absolute', bottom: '10px', left: '10px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                       {getAmenities(hotel).slice(0, 2).map((a: string) => (
                         <span key={a} style={{ background: 'rgba(255,255,255,0.95)', padding: '3px 8px', borderRadius: '5px', fontSize: '0.65rem', fontWeight: 600 }}>{a}</span>
@@ -128,11 +128,11 @@ function SearchContent() {
                   </div>
                   <div style={{ padding: '14px' }}>
                     <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>{hotel.name}</h3>
-                    <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: '10px' }}>📍 {hotel.city} • {hotel.rooms?.length || 0} room types</p>
+                    <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: '10px' }}>ðŸ“ {hotel.city} â€¢ {hotel.rooms?.length || 0} room types</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>from</span>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FF1F71' }}>₹{getLowestPrice(hotel).toLocaleString()}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748B' }}>/night</span></div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FF1F71' }}>â‚¹{getLowestPrice(hotel).toLocaleString()}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748B' }}>/night</span></div>
                       </div>
                       <span className="btn btn-primary btn-sm">View</span>
                     </div>

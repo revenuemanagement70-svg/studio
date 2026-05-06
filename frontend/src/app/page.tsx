@@ -23,11 +23,11 @@ export default function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(API_URL + '/hotels?featured=true').then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(API_URL + '/hotels/featured').then(r => r.json()).catch(() => ({ data: [] })),
       fetch(API_URL + '/cities/popular').then(r => r.json()).catch(() => ({ data: [] })),
       fetch(API_URL + '/offers').then(r => r.json()).catch(() => ({ data: [] })),
     ]).then(([hotelsRes, citiesRes, offersRes]) => {
-      setHotels(hotelsRes.data || []);
+      setHotels(hotelsRes.data?.hotels || hotelsRes.data || []);
       setCities(citiesRes.data || []);
       setOffers(offersRes.data || []);
       setLoading(false);
@@ -61,7 +61,7 @@ export default function HomePage() {
       <section style={{ background: 'linear-gradient(180deg, #FFF0F3 0%, #FFFFFF 100%)', padding: '60px 0 40px' }}>
         <div className="container" style={{ textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', padding: '6px 16px', borderRadius: '9999px', boxShadow: '0 2px 12px rgba(255,31,113,0.1)', marginBottom: '20px' }}>
-            <span>🔥</span>
+            <span>Ã°Å¸â€Â¥</span>
             <span style={{ color: '#FF1F71', fontWeight: 600, fontSize: '0.85rem' }}>India&apos;s #1 Hotel Booking Platform</span>
           </div>
           <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: '12px' }}>
@@ -69,7 +69,7 @@ export default function HomePage() {
             <span style={{ background: 'linear-gradient(135deg, #FF1F71, #FF7E5F)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Across India</span>
           </h1>
           <p style={{ color: '#64748B', fontSize: 'clamp(0.9rem, 2vw, 1.15rem)', maxWidth: '600px', margin: '0 auto 32px' }}>
-            ✅ 15,000+ Hotels • Best Price Guarantee • Instant Confirmation
+            Ã¢Å“â€¦ 15,000+ Hotels Ã¢â‚¬Â¢ Best Price Guarantee Ã¢â‚¬Â¢ Instant Confirmation
           </p>
 
           {/* ===== SEARCH BAR ===== */}
@@ -114,10 +114,10 @@ export default function HomePage() {
       <section style={{ padding: '32px 0', borderBottom: '1px solid #F1E4E8' }}>
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '24px', textAlign: 'center' }}>
           {[
-            { icon: '🏨', number: '15,000+', label: 'Hotels' },
-            { icon: '🌆', number: '500+', label: 'Cities' },
-            { icon: '👥', number: '10M+', label: 'Happy Guests' },
-            { icon: '⭐', number: '4.5/5', label: 'Avg Rating' },
+            { icon: 'Ã°Å¸ÂÂ¨', number: '15,000+', label: 'Hotels' },
+            { icon: 'Ã°Å¸Å’â€ ', number: '500+', label: 'Cities' },
+            { icon: 'Ã°Å¸â€˜Â¥', number: '10M+', label: 'Happy Guests' },
+            { icon: 'Ã¢Â­Â', number: '4.5/5', label: 'Avg Rating' },
           ].map(stat => (
             <div key={stat.label}>
               <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>{stat.icon}</div>
@@ -194,18 +194,18 @@ export default function HomePage() {
                 <Link key={hotel.id} href={'/hotel/' + hotel.id} className="card" style={{ display: 'block' }}>
                   <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
                     <img src={getImages(hotel)[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'} alt={hotel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFB800', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>⭐ {hotel.rating}</div>
+                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFB800', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>Ã¢Â­Â {hotel.rating}</div>
                     <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(255,31,113,0.9)', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600 }}>{hotel.propertyType}</div>
                   </div>
                   <div style={{ padding: '14px' }}>
                     <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px', color: '#1A1A2E' }}>{hotel.name}</h3>
-                    <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: '10px' }}>📍 {hotel.city}</p>
+                    <p style={{ color: '#64748B', fontSize: '0.8rem', marginBottom: '10px' }}>Ã°Å¸â€œÂ {hotel.city}</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>from</span>
-                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FF1F71' }}>₹{getLowestPrice(hotel).toLocaleString()}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748B' }}>/night</span></div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FF1F71' }}>Ã¢â€šÂ¹{getLowestPrice(hotel).toLocaleString()}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748B' }}>/night</span></div>
                       </div>
-                      <span style={{ color: '#FF1F71', fontWeight: 600, fontSize: '0.8rem' }}>View →</span>
+                      <span style={{ color: '#FF1F71', fontWeight: 600, fontSize: '0.8rem' }}>View Ã¢â€ â€™</span>
                     </div>
                   </div>
                 </Link>
@@ -213,7 +213,7 @@ export default function HomePage() {
             </div>
           )}
           <div style={{ textAlign: 'center', marginTop: '36px' }}>
-            <Link href="/search" className="btn btn-primary btn-lg">View All Hotels →</Link>
+            <Link href="/search" className="btn btn-primary btn-lg">View All Hotels Ã¢â€ â€™</Link>
           </div>
         </div>
       </section>
@@ -227,12 +227,12 @@ export default function HomePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>
             {[
-              { icon: '💰', title: 'Best Price Guarantee', desc: 'Find a lower price? We will match it + 10% off.' },
-              { icon: '⚡', title: 'Instant Confirmation', desc: 'Get booking confirmed instantly with real-time availability.' },
-              { icon: '🛡️', title: 'Safe & Secure', desc: 'Verified properties with quality checks and safe payments.' },
-              { icon: '📞', title: '24/7 Support', desc: 'Round-the-clock customer support via phone, chat, email.' },
-              { icon: '🏷️', title: 'No Hidden Charges', desc: 'What you see is what you pay. Transparent pricing always.' },
-              { icon: '⭐', title: 'Verified Reviews', desc: 'Real reviews from verified guests to help you choose.' },
+              { icon: 'Ã°Å¸â€™Â°', title: 'Best Price Guarantee', desc: 'Find a lower price? We will match it + 10% off.' },
+              { icon: 'Ã¢Å¡Â¡', title: 'Instant Confirmation', desc: 'Get booking confirmed instantly with real-time availability.' },
+              { icon: 'Ã°Å¸â€ºÂ¡Ã¯Â¸Â', title: 'Safe & Secure', desc: 'Verified properties with quality checks and safe payments.' },
+              { icon: 'Ã°Å¸â€œÅ¾', title: '24/7 Support', desc: 'Round-the-clock customer support via phone, chat, email.' },
+              { icon: 'Ã°Å¸ÂÂ·Ã¯Â¸Â', title: 'No Hidden Charges', desc: 'What you see is what you pay. Transparent pricing always.' },
+              { icon: 'Ã¢Â­Â', title: 'Verified Reviews', desc: 'Real reviews from verified guests to help you choose.' },
             ].map(f => (
               <div key={f.title} style={{ textAlign: 'center', padding: '28px 20px', borderRadius: '16px', background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{f.icon}</div>
@@ -249,7 +249,7 @@ export default function HomePage() {
         <div className="container" style={{ textAlign: 'center', color: 'white' }}>
           <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 900, marginBottom: '12px' }}>List Your Property on Staylo</h2>
           <p style={{ fontSize: '1rem', opacity: 0.9, maxWidth: '500px', margin: '0 auto 28px' }}>Join 15,000+ hotel partners. Grow your business effortlessly.</p>
-          <Link href="/extranet" className="btn btn-white btn-lg">Get Started Free →</Link>
+          <Link href="/extranet" className="btn btn-white btn-lg">Get Started Free Ã¢â€ â€™</Link>
         </div>
       </section>
     </>
