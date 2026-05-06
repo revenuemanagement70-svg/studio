@@ -23,6 +23,7 @@ function SearchContent() {
   const [starFilter, setStarFilter] = useState<number | null>(null);
   const [total, setTotal] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setLoading(true);
@@ -48,6 +49,15 @@ function SearchContent() {
   const getLowestPrice = (hotel: Hotel) => !hotel.rooms?.length ? 0 : Math.min(...hotel.rooms.map(r => r.basePrice));
   const getImages = (hotel: Hotel) => { if (Array.isArray(hotel.images)) return hotel.images; try { return JSON.parse(hotel.images as any); } catch { return []; } };
   const getAmenities = (hotel: Hotel) => { if (Array.isArray(hotel.amenities)) return hotel.amenities; try { return JSON.parse(hotel.amenities as any); } catch { return []; } };
+
+  const toggleSave = async (hotelId: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/login'; return; }
+    const isSaved = savedIds.has(hotelId);
+    const method = isSaved ? 'DELETE' : 'POST';
+    await fetch(API_URL + '/saved/' + hotelId, { method, headers: { Authorization: 'Bearer ' + token } });
+    setSavedIds(prev => { const n = new Set(prev); isSaved ? n.delete(hotelId) : n.add(hotelId); return n; });
+  };
 
   const selectStyle: React.CSSProperties = { padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #F1E4E8', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer', background: 'white' };
 
@@ -119,6 +129,7 @@ function SearchContent() {
                 <Link key={hotel.id} href={'/hotel/' + hotel.id} className="card" style={{ display: 'block' }}>
                   <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
                     <img src={getImages(hotel)[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'} alt={hotel.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button onClick={(e) => { e.preventDefault(); toggleSave(hotel.id); }} style={{ position: 'absolute', top: '10px', left: '10px', background: 'white', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 2, fontSize: '0.9rem' }}>{savedIds.has(hotel.id) ? String.fromCodePoint(0x2764) : String.fromCodePoint(0x1F90D)}</button>
                     <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFB800', color: 'white', padding: '3px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>â­ {hotel.rating}</div>
                     <div style={{ position: 'absolute', bottom: '10px', left: '10px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                       {getAmenities(hotel).slice(0, 2).map((a: string) => (

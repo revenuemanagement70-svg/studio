@@ -83,4 +83,37 @@ router.get('/me', authenticate, (req: Request, res: Response) => {
   res.json({ status: 'success', data: { user: req.user } });
 });
 
+
+// PUT /api/auth/profile
+router.put('/profile', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { name, phone } = req.body;
+    const userId = (req as any).user?.id;
+    if (!userId) throw new AppError(401, 'Not authenticated');
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { ...(name && { name }), ...(phone && { phone }) },
+      select: { id: true, name: true, email: true, role: true, phone: true },
+    });
+    res.json({ status: 'success', data: { user: updated } });
+  } catch (err) { next(err); }
+});
+
+// PUT /api/auth/change-password
+router.put('/change-password', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = (req as any).user?.id;
+    if (!userId) throw new AppError(401, 'Not authenticated');
+    if (!newPassword || newPassword.length < 6) throw new AppError(400, 'New password must be at least 6 characters');
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError(404, 'User not found');
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new AppError(401, 'Current password is incorrect');
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+    res.json({ status: 'success', message: 'Password changed successfully' });
+  } catch (err) { next(err); }
+});
+
 export default router;

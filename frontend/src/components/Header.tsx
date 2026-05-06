@@ -79,7 +79,7 @@ export default function Header() {
             </Link>
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Link href={user.role === 'ADMIN' ? '/admin' : user.role === 'PARTNER' ? '/extranet' : '/my-bookings'} style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1A1A2E' }}>
+                <Link href='/profile' style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1A1A2E' }}>
                   Hi, {user.name.split(' ')[0]}
                 </Link>
                 <button onClick={handleLogout} className="btn btn-outline btn-sm">Logout</button>
@@ -115,9 +115,10 @@ export default function Header() {
         <div style={{ borderTop: '1px solid #F1E4E8', margin: '12px 0', paddingTop: '12px' }}>
           {user ? (
             <>
-              <Link href={user.role === 'ADMIN' ? '/admin' : user.role === 'PARTNER' ? '/extranet' : '/my-bookings'}>
-                👤 My Account
+              <Link href='/profile'>
+                👤 My Profile
               </Link>
+              <Link href="/saved">💝 Saved Hotels</Link>
               <button onClick={handleLogout} style={{ width: '100%', marginTop: '8px' }} className="btn btn-outline">Logout</button>
             </>
           ) : (

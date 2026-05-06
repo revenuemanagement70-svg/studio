@@ -12,6 +12,7 @@ import offerRoutes from './routes/offers';
 import reviewRoutes from './routes/reviews';
 import adminRoutes from './routes/admin';
 import extranetRoutes from './routes/extranet';
+import savedRoutes from './routes/saved';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/saved', savedRoutes);
 
 // Protected routes
 app.use('/api/partners', partnerRoutes);
