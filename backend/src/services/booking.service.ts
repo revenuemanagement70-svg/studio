@@ -74,6 +74,7 @@ export async function createBooking(input: CreateBookingInput) {
         bookingRef: generateBookingRef(),
         userId,
         roomId: room.id,
+        hotelId: room.hotel.id,
         hotelName: room.hotel.name,
         checkin,
         checkout,

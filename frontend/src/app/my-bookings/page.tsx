@@ -14,7 +14,7 @@ export default function MyBookingsPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { router.push('/login'); return; }
-    fetch(API_URL + '/bookings', { headers: { 'Authorization': 'Bearer ' + token } })
+    fetch(API_URL + '/bookings/my', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(r => r.json())
       .then(data => { setBookings(data.data || []); setLoading(false); })
       .catch(() => setLoading(false));

@@ -34,6 +34,7 @@ router.post('/create-order', authenticate, async (req: Request, res: Response, n
         bookingRef,
         userId,
         hotelId: room.hotel.id,
+        hotelName: room.hotel.name,
         roomId: room.id,
         checkin: new Date(checkin),
         checkout: new Date(checkout),
@@ -42,6 +43,7 @@ router.post('/create-order', authenticate, async (req: Request, res: Response, n
         guestEmail: guestEmail || '',
         guestPhone: guestPhone || '',
         totalPrice,
+        taxes,
         platformFee: Math.round(totalPrice * (room.hotel.commission / 100)),
         hotelPayout: totalPrice - Math.round(totalPrice * (room.hotel.commission / 100)),
         status: 'PENDING',
@@ -123,10 +125,12 @@ router.post('/pay-at-hotel', authenticate, async (req: Request, res: Response, n
     const booking = await prisma.booking.create({
       data: {
         bookingRef, userId, hotelId: room.hotel.id, roomId: room.id,
+        hotelName: room.hotel.name,
         checkin: new Date(checkin), checkout: new Date(checkout),
         guests: guests || 2, guestName: guestName || 'Guest',
         guestEmail: guestEmail || '', guestPhone: guestPhone || '',
         totalPrice,
+        taxes,
         platformFee: Math.round(totalPrice * (room.hotel.commission / 100)),
         hotelPayout: totalPrice - Math.round(totalPrice * (room.hotel.commission / 100)),
         status: 'CONFIRMED', paymentStatus: 'PAY_AT_HOTEL',

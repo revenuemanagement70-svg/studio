@@ -32,3 +32,7 @@ claude-code-docs/
 CLAUDE.md
 AGENTS.md
 implementation_plan.md
+
+# Backend SQLite
+backend/prisma/dev.db
+backend/prisma/dev.db-journal

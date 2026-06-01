@@ -78,7 +78,13 @@ export default function Header() {
               List your property
             </Link>
             {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <Link href="/my-bookings" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>
+                  My Bookings
+                </Link>
+                <Link href="/saved" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>
+                  Saved
+                </Link>
                 <Link href='/profile' style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1A1A2E' }}>
                   Hi, {user.name.split(' ')[0]}
                 </Link>

@@ -61,15 +61,26 @@ router.get('/properties', async (req: any, res, next) => {
 router.post('/properties', async (req: any, res, next) => {
   try {
     const partnerId = req.user.id;
+    const { name, city, address, description, propertyType, starRating, amenities, images, policies, rooms } = req.body;
     const hotel = await prisma.hotel.create({
       data: {
-        ...req.body,
-        partnerId,
-        status: 'PENDING',
-        images: JSON.stringify(req.body.images || []),
-        amenities: JSON.stringify(req.body.amenities || []),
-        policies: JSON.stringify(req.body.policies || {}),
+        name, city, address: address || '', description: description || '',
+        propertyType: propertyType || 'Hotel', starRating: starRating || 3,
+        partnerId, status: 'PENDING', rating: 0, isFeatured: false, commission: 20,
+        images: JSON.stringify(images || []),
+        amenities: JSON.stringify(amenities || []),
+        policies: JSON.stringify(policies || {}),
+        rooms: {
+          create: (rooms || []).map((r: any) => ({
+            type: r.type || 'Standard Room',
+            capacity: r.capacity || 2,
+            basePrice: r.basePrice || 1000,
+            totalRooms: r.totalRooms || 1,
+            amenities: JSON.stringify(r.amenities || []),
+          })),
+        },
       },
+      include: { rooms: true },
     });
     res.status(201).json({ data: hotel });
   } catch (err) { next(err); }

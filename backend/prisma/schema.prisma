@@ -66,6 +66,7 @@ model Hotel {
   rooms        Room[]
   reviews      Review[]
   savedBy      SavedHotel[]
+  bookings     Booking[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
@@ -104,29 +105,35 @@ model RoomAvailability {
 }
 
 model Booking {
-  id         String        @id @default(uuid())
-  bookingRef String        @unique
-  userId     String
-  user       User          @relation(fields: [userId], references: [id])
-  roomId     String
-  room       Room          @relation(fields: [roomId], references: [id])
-  hotelName  String
-  checkin    DateTime
-  checkout   DateTime
-  guests     Int
-  totalPrice Float
-  taxes      Float
-  status     BookingStatus @default(PENDING)
-  guestName  String?
-  guestEmail String?
-  guestPhone String?
+  id              String        @id @default(uuid())
+  bookingRef      String        @unique
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id])
+  hotelId         String
+  hotel           Hotel         @relation(fields: [hotelId], references: [id])
+  hotelName       String
+  checkin         DateTime
+  checkout        DateTime
+  guests          Int
+  totalPrice      Float
+  taxes           Float
+  platformFee     Float?
+  hotelPayout     Float?
+  paymentStatus   String        @default("PENDING")
+  status          BookingStatus @default(PENDING)
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
   specialRequests String?
-  paymentId  String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  paymentId       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([userId])
   @@index([roomId])
+  @@index([hotelId])
   @@index([status])
 }
 
