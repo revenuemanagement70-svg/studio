@@ -19,75 +19,140 @@ interface Store {
 
 const STORES: Store[] = [
   {
-    id: 'delhi-cp',
-    name: 'Staylo Premium Booking Hub - Delhi CP',
-    city: 'Delhi',
-    type: 'Experience Center & Booking Hub',
-    address: 'Radial Road 3, Connaught Place, New Delhi, Delhi 110001',
+    id: 'staylo-001',
+    name: 'Staylo Alaknanda Palace',
+    city: 'Ayodhya',
+    type: 'Hotel',
+    address: 'Ram Ghat Road, Ayodhya, Uttar Pradesh 224123',
     phone: '+91 98993 08683',
-    email: 'delhi.cp@staylo.in',
-    timings: '09:00 AM - 10:00 PM (Everyday)',
-    lat: 28.6304,
-    lng: 77.2177,
-    amenities: ['Instant Bookings', 'Cash Accepted', 'Travel Lounge', 'Expert Guidance']
+    email: 'ayodhya@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 26.79155896,
+    lng: 82.20235283,
+    amenities: ['24/7 Room Service', 'Free WiFi', 'Air Conditioning', 'Instant Check-in']
   },
   {
-    id: 'mumbai-bandra',
-    name: 'Staylo Experience Hub - Mumbai Bandra',
-    city: 'Mumbai',
-    type: 'Experience Center',
-    address: 'Linking Road, Bandra West, Mumbai, Maharashtra 400050',
-    phone: '+91 98993 08684',
-    email: 'mumbai.bandra@staylo.in',
-    timings: '10:00 AM - 09:00 PM (Everyday)',
-    lat: 19.0596,
-    lng: 72.8295,
-    amenities: ['Coffee Bar', 'Luggage Lounge', 'Instant Bookings', 'Parking Available']
+    id: 'staylo-002',
+    name: 'Staylo Anupam Palace',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Neb Sarai, Delhi 110030',
+    phone: '+91 98993 08683',
+    email: 'delhi@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.51475857,
+    lng: 77.20238012,
+    amenities: ['24/7 Room Service', 'Free WiFi', 'Clean Linen', 'Housekeeping']
   },
   {
-    id: 'blr-indiranagar',
-    name: 'Staylo Booking Lounge - Bangalore',
+    id: 'staylo-003',
+    name: 'Staylo The Studio Anupam Garden',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Neb Sarai, Delhi 110030',
+    phone: '+91 98993 08683',
+    email: 'studio.delhi@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.5127607,
+    lng: 77.2022835,
+    amenities: ['Kitchenette', 'Free WiFi', 'Air Conditioning', 'Parking']
+  },
+  {
+    id: 'staylo-004',
+    name: 'Staylo Sunlight Inn CP',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Connaught Place, Delhi 110001',
+    phone: '+91 98993 08683',
+    email: 'cp@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.62768772,
+    lng: 77.21871435,
+    amenities: ['Metro Access', 'Free WiFi', 'Room Service', 'Breakfast Included']
+  },
+  {
+    id: 'staylo-005',
+    name: 'Staylo Vrindavan Palace Noida',
+    city: 'Noida',
+    type: 'Hotel',
+    address: 'Sector 62, Noida, Uttar Pradesh 201301',
+    phone: '+91 98993 08683',
+    email: 'noida@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.62618951,
+    lng: 77.37351634,
+    amenities: ['Corporate Hub', 'Free WiFi', 'Meeting Room', 'AC Rooms']
+  },
+  {
+    id: 'staylo-006',
+    name: 'Staylo Washington Residence',
+    city: 'Ayodhya',
+    type: 'Hotel',
+    address: 'Ayodhya, Uttar Pradesh 224123',
+    phone: '+91 98993 08683',
+    email: 'washington@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 26.79155897,
+    lng: 82.20235284,
+    amenities: ['Premium Stay', 'Free WiFi', '24/7 Security', 'Temple Guide']
+  },
+  {
+    id: 'staylo-007',
+    name: 'Staylo Shanti Inn CP',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Connaught Place, Delhi 110001',
+    phone: '+91 98993 08683',
+    email: 'shanti.cp@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.62768972,
+    lng: 77.21870012,
+    amenities: ['Central Location', 'Free WiFi', 'Comfortable Beds', 'Room Service']
+  },
+  {
+    id: 'staylo-008',
+    name: "Staylo Paradise Villa's",
     city: 'Bangalore',
-    type: 'Booking Hub',
-    address: '100 Feet Road, Indiranagar, Bangalore, Karnataka 560038',
-    phone: '+91 98993 08685',
-    email: 'blr.indira@staylo.in',
-    timings: '09:00 AM - 09:00 PM (Everyday)',
-    lat: 12.9718,
-    lng: 77.6412,
-    amenities: ['Travel Consultants', 'Luggage Storage', 'Free WiFi', 'Digital Assistance']
+    type: 'Hotel',
+    address: 'Indiranagar, Bangalore, Karnataka 560038',
+    phone: '+91 98993 08683',
+    email: 'paradise.blr@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 12.9718973,
+    lng: 77.64120013,
+    amenities: ['Luxury Villa', 'Free WiFi', 'Lush Gardens', 'Lounge Bar']
   },
   {
-    id: 'goa-panaji',
-    name: 'Staylo Holiday Desk - Goa Panaji',
-    city: 'Goa',
-    type: 'Holiday Booking Lounge',
-    address: 'MG Road, Panaji, Goa 403001',
-    phone: '+91 98993 08686',
-    email: 'goa.panaji@staylo.in',
-    timings: '09:00 AM - 08:00 PM (Everyday)',
-    lat: 15.4909,
-    lng: 73.8278,
-    amenities: ['Local Tour Booking', 'Refreshment Bar', 'Beach Stays Info', 'Scooter Rental Help']
+    id: 'staylo-009',
+    name: 'Staylo Heritage Homestay',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Neb Sarai, Delhi 110030',
+    phone: '+91 98993 08683',
+    email: 'heritage.delhi@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.51475858,
+    lng: 77.20238025,
+    amenities: ['Traditional Decor', 'Free WiFi', 'Homely Food', 'Peaceful Location']
   },
   {
-    id: 'jaipur-mi',
-    name: 'Staylo Booking Hub - Jaipur MI Road',
-    city: 'Jaipur',
-    type: 'Booking Hub',
-    address: 'MI Road, Near Panch Batti, Jaipur, Rajasthan 302001',
-    phone: '+91 98993 08687',
-    email: 'jaipur.mi@staylo.in',
-    timings: '09:00 AM - 08:30 PM (Everyday)',
-    lat: 26.9124,
-    lng: 75.8116,
-    amenities: ['Multilingual Help', 'Cash Accepted', 'Local Tour Desk', 'Instant Discount']
+    id: 'staylo-010',
+    name: 'Staylo Cozy Residencies CP',
+    city: 'Delhi',
+    type: 'Hotel',
+    address: 'Connaught Place, Delhi 110001',
+    phone: '+91 98993 08683',
+    email: 'cozy.cp@staylo.in',
+    timings: 'Open 24 Hours (Everyday)',
+    lat: 28.62769123,
+    lng: 77.21871324,
+    amenities: ['Cozy Rooms', 'Free WiFi', 'Metro Proximity', '24/7 Desk']
   },
   {
     id: 'corp-hq',
     name: 'Staylo Corporate Headquarters',
-    city: 'Delhi NCR',
-    type: 'Corporate Office',
+    city: 'Noida',
+    type: 'Office',
     address: 'Tech Boulevard, Sector 62, Noida, Uttar Pradesh 201301',
     phone: '+91 98993 08683',
     email: 'support@staylo.in',
@@ -125,7 +190,7 @@ export default function StoreLocatorPage() {
   const [locationMessage, setLocationMessage] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const storeTypes = ['All', 'Experience Center', 'Booking Hub', 'Holiday Booking Lounge', 'Corporate Office'];
+  const storeTypes = ['All', 'Hotel', 'Office'];
 
   const filteredStores = STORES.filter(store => {
     const matchesSearch = 
@@ -209,7 +274,7 @@ export default function StoreLocatorPage() {
                   }}
                 >
                   {storeTypes.map(type => (
-                    <option key={type} value={type}>{type === 'All' ? 'All Hub Types' : type}</option>
+                    <option key={type} value={type}>{type === 'All' ? 'All Types' : type === 'Hotel' ? 'Hotels' : 'Offices'}</option>
                   ))}
                 </select>
               </div>
