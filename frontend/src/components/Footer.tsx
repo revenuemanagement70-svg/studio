@@ -28,6 +28,7 @@ export default function Footer() {
               <Link href="/contact" style={{ color: '#94A3B8', fontSize: '0.85rem' }}>Help Center</Link>
               <Link href="/contact" style={{ color: '#94A3B8', fontSize: '0.85rem' }}>Cancellation</Link>
               <Link href="/contact" style={{ color: '#94A3B8', fontSize: '0.85rem' }}>Contact Us</Link>
+              <Link href="/store-locator" style={{ color: '#94A3B8', fontSize: '0.85rem' }}>Store Locator</Link>
             </div>
           </div>
           <div>

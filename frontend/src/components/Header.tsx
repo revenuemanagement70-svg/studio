@@ -45,6 +45,7 @@ export default function Header() {
     { label: 'Search Hotels', href: '/search' },
     { label: 'Destinations', href: '/#destinations' },
     { label: 'Offers', href: '/offers' },
+    { label: 'Store Locator', href: '/store-locator' },
     { label: 'Contact', href: '/contact' },
   ];
 
